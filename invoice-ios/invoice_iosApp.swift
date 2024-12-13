@@ -13,6 +13,7 @@ struct invoice_iosApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Invoice.self,
+            InvoiceDetail.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
