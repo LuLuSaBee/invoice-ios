@@ -16,7 +16,8 @@ enum InvoiceType: String, Codable {
 
 @Model
 class Invoice {
-    @Attribute(.unique) private(set) var id: String
+    #Unique<Invoice>([\.year, \.month, \.numberPrefix, \.numberSuffix])
+
     private(set) var type: InvoiceType
 
     var shopName: String
@@ -42,7 +43,6 @@ class Invoice {
 
     init(type: InvoiceType = .manual, shopName: String, numberPrefix: String, numberSuffix: Int, amount: Int,
          year: Int, month: Int, day: Int, detail: [InvoiceDetail] = []) {
-        self.id = "\(year)-\(month)-\(numberPrefix)-\(numberSuffix)"
         self.type = type
         self.shopName = shopName
         self.year = year
