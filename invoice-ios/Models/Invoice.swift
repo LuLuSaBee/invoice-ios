@@ -17,6 +17,7 @@ enum InvoiceType: String, Codable {
 @Model
 class Invoice {
     #Unique<Invoice>([\.year, \.month, \.numberPrefix, \.numberSuffix])
+    #Index<Invoice>([\.year, \.month, \.day], [\.shopName], [\.numberPrefix, \.numberSuffix])
 
     private(set) var type: InvoiceType
 
@@ -57,6 +58,8 @@ class Invoice {
 
 @Model
 class InvoiceDetail {
+    #Index<InvoiceDetail>([\.name])
+
     var name: String
     @Relationship var invoice: Invoice
 
