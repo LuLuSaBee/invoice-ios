@@ -25,23 +25,15 @@ private struct AddInvoiceFloatButton: View {
     @State private var showAddOption = false
 
     var body: some View {
-        VStack(spacing: 16) {
-            Group {
-                Button(action: {}) {
-                    Text("掃描")
-                }
-                Button(action: {}) {
-                    Text("手動")
-                }
-            }
-            .offset(y: showAddOption ? 0 : 40)
-            .opacity(showAddOption ? 1 : 0)
+        VStack(alignment: .trailing, spacing: 16) {
+            AddOptionButton(title: "掃描輸入", image: Image(systemName: "qrcode.viewfinder"), action: onClickScanAdd)
+                .offset(y: showAddOption ? 0 : 160)
+                .opacity(showAddOption ? 1 : 0)
+            AddOptionButton(title: "手動輸入", image: Image(systemName: "keyboard"), action: onClickManualAdd)
+                .offset(y: showAddOption ? 0 : 80)
+                .opacity(showAddOption ? 1 : 0)
 
-            Button(action: {
-                withAnimation {
-                    self.showAddOption.toggle()
-                }
-            }) {
+            Button(action: toggleShowAddOption) {
                 Image(systemName: "plus")
                     .resizable()
                     .frame(width: 16, height: 16)
@@ -55,10 +47,10 @@ private struct AddInvoiceFloatButton: View {
             .clipShape(Circle())
             .overlay { Circle().stroke(showAddOption ? .gray : .clear, lineWidth: 1) }
             .contentShape(Circle())
-            .padding(.bottom, 16)
-            .padding(.trailing, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+        .padding(.bottom, 16)
+        .padding(.trailing, 16)
         .background {
             if showAddOption {
                 Rectangle()
@@ -69,12 +61,46 @@ private struct AddInvoiceFloatButton: View {
                             endPoint: .bottom
                         )
                     )
-                    .onTapGesture {
-                        withAnimation {
-                            self.showAddOption.toggle()
-                        }
-                    }
+                    .onTapGesture(perform: toggleShowAddOption)
             }
+        }
+    }
+
+    private func toggleShowAddOption() {
+        withAnimation(.default.speed(1.5)) {
+            self.showAddOption.toggle()
+        }
+    }
+
+    private func onClickScanAdd() {
+        toggleShowAddOption()
+    }
+
+    private func onClickManualAdd() {
+        toggleShowAddOption()
+    }
+}
+
+private struct AddOptionButton: View {
+    var title: LocalizedStringKey
+    var image: Image
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                Text(title)
+                image
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 32, height: 32)
+                    .padding(12)
+                    .foregroundStyle(Color.white)
+                    .background(Color.accentColor)
+                    .clipShape(Circle())
+                    .bold()
+            }
+            .padding(.trailing, 4)
         }
     }
 }
