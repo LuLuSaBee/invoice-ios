@@ -10,6 +10,16 @@ import SwiftUI
 struct InvoiceListView: View {
     var body: some View {
         ScrollView {
+            VStack {
+                HStack {
+                    Image(systemName: "calendar.badge.clock")
+                    Text("開獎倒數")
+                }
+                .foregroundStyle(Color.accentColor)
+            }
+            .padding(8)
+            .background(Color.generalBackground, in: .rect(cornerRadius: 16))
+
             ForEach(0..<2) { section in
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
                     Section(header: StickyHeaderView(title: "Section \(section + 1)")) {
@@ -24,6 +34,7 @@ struct InvoiceListView: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
             }
+
             Spacer(minLength: 80)
         }
         .scrollIndicators(.hidden)
