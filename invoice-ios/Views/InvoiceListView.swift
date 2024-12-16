@@ -13,12 +13,20 @@ struct InvoiceListView: View {
             VStack {
                 HStack {
                     Image(systemName: "calendar.badge.clock")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 24, height: 24)
                     Text("開獎倒數")
+                        .font(.title3.bold())
+                        .padding(.bottom, 4)
                 }
                 .foregroundStyle(Color.accentColor)
             }
-            .padding(8)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
             .background(Color.generalBackground, in: .rect(cornerRadius: 16))
+            .padding(.top, 8)
 
             ForEach(0..<2) { section in
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
@@ -31,12 +39,11 @@ struct InvoiceListView: View {
                     }
                 }
                 .background(Color.generalBackground, in: .rect(cornerRadius: 16))
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
             }
 
-            Spacer(minLength: 80)
+            Spacer(minLength: 96)
         }
+        .padding(.horizontal, 16)
         .scrollIndicators(.hidden)
     }
 }
