@@ -24,6 +24,7 @@ struct InvoiceListView: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
             }
+            Spacer(minLength: 80)
         }
         .scrollIndicators(.hidden)
     }
