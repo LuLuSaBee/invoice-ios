@@ -26,9 +26,10 @@ class Invoice {
     var month: Int
     var day: Int
     var numberPrefix: String
-    var numberSuffix: Int
+    var numberSuffix: String
     var amount: Int
-    var detail: [InvoiceDetail]
+
+    @Relationship(deleteRule: .cascade) var details: [InvoiceDetail]
 
     var date: Date {
         var component = DateComponents()
@@ -42,8 +43,8 @@ class Invoice {
         "\(numberPrefix)-\(numberSuffix)"
     }
 
-    init(type: InvoiceType = .manual, shopName: String, numberPrefix: String, numberSuffix: Int, amount: Int,
-         year: Int, month: Int, day: Int, detail: [InvoiceDetail] = []) {
+    init(type: InvoiceType = .manual, shopName: String, numberPrefix: String, numberSuffix: String, amount: Int,
+         year: Int, month: Int, day: Int, details: [InvoiceDetail] = []) {
         self.type = type
         self.shopName = shopName
         self.year = year
@@ -52,7 +53,7 @@ class Invoice {
         self.numberPrefix = numberPrefix
         self.numberSuffix = numberSuffix
         self.amount = amount
-        self.detail = detail
+        self.details = details
     }
 }
 
@@ -61,7 +62,8 @@ class InvoiceDetail {
     #Index<InvoiceDetail>([\.name])
 
     var name: String
-    @Relationship var invoice: Invoice
+
+    @Relationship(inverse: \Invoice.details) var invoice: Invoice
 
     init(name: String, invoice: Invoice) {
         self.name = name
