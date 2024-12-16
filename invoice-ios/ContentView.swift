@@ -37,5 +37,8 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    let preview = Preview()
+    preview.addExamples(Invoice.sampleData)
+
+    return ContentView().modelContainer(preview.modelContainer)
 }
