@@ -6,8 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct InvoiceListView: View {
+    @Query private var invoices: [Invoice]
+
     var body: some View {
         ScrollView {
             VStack {
@@ -28,14 +31,14 @@ struct InvoiceListView: View {
             .background(Color.generalBackground, in: .rect(cornerRadius: 16))
             .padding(.top, 8)
 
-            ForEach(0..<2) { section in
+            ForEach(invoices, id: \.numberString) { invoice in
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                    Section(header: StickyHeaderView(title: "Section \(section + 1)")) {
-                        ForEach(0..<20) { item in
-                            Text("Item \(item)")
-                                .padding()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
+                    Section(header: StickyHeaderView(title: invoice.numberString)) {
+                        Text("\(invoice.shopName)")
+                            .font(.title3)
+                            .padding(.bottom, 4)
+                        Text("\(invoice.amount)")
+                            .font(.title3)
                     }
                 }
                 .background(Color.generalBackground, in: .rect(cornerRadius: 16))
