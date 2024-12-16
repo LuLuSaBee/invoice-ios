@@ -20,7 +20,7 @@ struct InvoiceListView: View {
                         }
                     }
                 }
-                .background(Color("general_background"), in: .rect(cornerRadius: 16))
+                .background(Color.generalBackground, in: .rect(cornerRadius: 16))
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
             }
@@ -38,6 +38,6 @@ private struct StickyHeaderView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
             .zIndex(1)
-            .background(Color("general_background"))
+            .background(Color.generalBackground)
     }
 }

@@ -64,7 +64,7 @@ private struct AddInvoiceFloatButton: View {
                 Rectangle()
                     .fill(
                         LinearGradient(
-                            gradient: Gradient(colors: [Color.clear, Color("general_background")]),
+                            gradient: Gradient(colors: [Color.generalBackground.opacity(0.5), Color.generalBackground]),
                             startPoint: .top,
                             endPoint: .bottom
                         )
