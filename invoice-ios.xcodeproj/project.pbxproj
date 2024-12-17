@@ -187,11 +187,11 @@
 				};
 			};
 			buildConfigurationList = 4291D9042D0BBC3500A09ADA /* Build configuration list for PBXProject "invoice-ios" */;
-			developmentRegion = en;
+			developmentRegion = "zh-Hant";
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				en,
 				Base,
+				"zh-Hant",
 			);
 			mainGroup = 4291D9002D0BBC3500A09ADA;
 			minimizedProjectReferenceProxies = 1;
