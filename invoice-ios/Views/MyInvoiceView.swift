@@ -8,9 +8,13 @@
 import SwiftUI
 
 struct MyInvoiceView: View {
+    @State var groupingOption: InvoiceGroupingOption = .month
+
+    let invoiceListViewModel = InvoiceListViewModel(period: .init(from: 11, at: 2024), service: InvoiceManager.shared)
+
     var body: some View {
         ZStack {
-            InvoiceListView()
+            InvoiceListView(viewModel: invoiceListViewModel, groupingOption: groupingOption)
 
             AddInvoiceFloatButton()
         }
@@ -20,7 +24,18 @@ struct MyInvoiceView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Image(systemName: "rectangle.3.group")
+                Button(action: {
+                    withAnimation {
+                        groupingOption = groupingOption == .day ? .month : .day
+                    }
+                }) {
+                    switch groupingOption {
+                    case .month:
+                        Image(systemName: "rectangle.3.group")
+                    case .day:
+                        Image(systemName: "rectangle.3.group.fill")
+                    }
+                }
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Image(systemName: "magnifyingglass")

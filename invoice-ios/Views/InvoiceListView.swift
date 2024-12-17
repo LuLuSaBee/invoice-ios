@@ -5,11 +5,89 @@
 //  Created by lewisliu on 2024/12/16.
 //
 
+import Foundation
 import SwiftUI
 import SwiftData
 
 struct InvoiceListView: View {
-    @Query private var invoices: [Invoice]
+    @ObservedObject var viewModel: InvoiceListViewModel
+    var groupingOption: InvoiceGroupingOption
+
+    @State private var sectionDatas: [SectionData] = []
+    private var dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale.current
+        return formatter
+    }()
+
+    private struct SectionData {
+        var title: String
+        var amount: Int
+        var invoices: [Invoice]
+    }
+
+    init(viewModel: InvoiceListViewModel, groupingOption: InvoiceGroupingOption) {
+        self.viewModel = viewModel
+        self.groupingOption = groupingOption
+    }
+
+    @ViewBuilder func sectionHeader(title: String, amount: Int) -> some View {
+        HStack {
+            Text(title)
+            Spacer()
+            Text("$\(amount.formatted(.number))")
+        }
+        .font(.headline)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(Color.generalBackground)
+    }
+
+    @ViewBuilder func invoiceCell(_ invoice: Invoice) -> some View {
+        HStack {
+            if groupingOption == .month {
+                VStack(alignment: .center) {
+                    Text("\(invoice.day)")
+                    Text(formatDate(invoice.date, formatter: "EEE"))
+                        .font(.footnote)
+                }
+                .foregroundStyle(.primary.opacity(0.8))
+                .padding(.trailing, 16)
+            }
+
+            VStack(alignment: .leading) {
+                Group {
+                    if invoice.shopName.isEmpty {
+                        Text("無商家名稱")
+                    } else {
+                        Text(invoice.shopName)
+                    }
+                }
+                .lineLimit(1)
+                .font(.title3)
+
+                HStack(spacing: 4) {
+                    Text(invoice.type == .scan ? "掃描" : "手動")
+                        .font(.caption)
+                        .foregroundStyle(.primary.opacity(0.8))
+                        .padding(.horizontal, 2)
+                        .contentShape(Rectangle())
+                        .background(Color.primary.opacity(0.1), in: RoundedRectangle(cornerRadius: 4))
+                    Text(invoice.numberString)
+                        .foregroundStyle(.primary.opacity(0.5))
+                        .font(.footnote)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text("$\(invoice.amount.formatted(.number))")
+                .frame(minWidth: 50)
+                .foregroundStyle(.primary.opacity(0.8))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
+    }
 
     var body: some View {
         ScrollView {
@@ -31,14 +109,10 @@ struct InvoiceListView: View {
             .background(Color.generalBackground, in: .rect(cornerRadius: 16))
             .padding(.top, 8)
 
-            ForEach(invoices, id: \.numberString) { invoice in
+            ForEach(self.sectionDatas, id: \.title) { section in
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                    Section(header: StickyHeaderView(title: invoice.numberString)) {
-                        Text("\(invoice.shopName)")
-                            .font(.title3)
-                            .padding(.bottom, 4)
-                        Text("\(invoice.amount)")
-                            .font(.title3)
+                    Section(header: sectionHeader(title: section.title, amount: section.amount)) {
+                        ForEach(section.invoices, content: invoiceCell)
                     }
                 }
                 .background(Color.generalBackground, in: .rect(cornerRadius: 16))
@@ -48,18 +122,34 @@ struct InvoiceListView: View {
         }
         .padding(.horizontal, 16)
         .scrollIndicators(.hidden)
+        .onChange(of: viewModel.invoices) { updateData() }
+        .onChange(of: groupingOption) { updateData() }
+        .onAppear(perform: updateData)
     }
-}
 
-private struct StickyHeaderView: View {
-    let title: String
+    private func formatDate(_ date: Date, formatter: String) -> String {
+        dateFormatter.dateFormat = formatter
+        return dateFormatter.string(from: date)
+    }
 
-    var body: some View {
-        Text(title)
-            .font(.headline)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .zIndex(1)
-            .background(Color.generalBackground)
+    private func updateData() {
+        let sortedInvoices = viewModel.invoices.sorted(by: { $0.date > $1.date })
+        var grouped: [String: [Invoice]]
+        switch groupingOption {
+        case .month:
+            grouped = Dictionary(grouping: sortedInvoices) { invoice in
+                formatDate(invoice.date, formatter: "MMMM")
+            }
+        case .day:
+            grouped = Dictionary(grouping: sortedInvoices) { invoice in
+                "\(String(format: "%02d", invoice.month))/\(String(format: "%02d", invoice.day)) \(formatDate(invoice.date, formatter: "EEE"))"
+            }
+        }
+
+        sectionDatas = grouped.map { (key, invoices) in
+            let totalAmount = invoices.reduce(0) { $0 + $1.amount }
+            return SectionData(title: key, amount: totalAmount, invoices: invoices)
+        }
+        .sorted { $0.title > $1.title }
     }
 }
