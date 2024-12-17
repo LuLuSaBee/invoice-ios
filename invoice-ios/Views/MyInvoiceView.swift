@@ -18,6 +18,14 @@ struct MyInvoiceView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle("我的發票")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Image(systemName: "rectangle.3.group")
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Image(systemName: "magnifyingglass")
+            }
+        }
     }
 }
 
