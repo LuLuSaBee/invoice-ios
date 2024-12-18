@@ -81,7 +81,7 @@ struct InvoiceListView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             Text("$\(invoice.amount.formatted(.number))")
-                .frame(minWidth: 50)
+                .frame(minWidth: 50, alignment: .trailing)
                 .foregroundStyle(.primary.opacity(0.8))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -115,6 +115,7 @@ struct InvoiceListView: View {
                         ForEach(section.invoices, content: invoiceCell)
                     }
                 }
+                .padding(.bottom, 8)
                 .background(Color.generalBackground, in: .rect(cornerRadius: 16))
             }
 
