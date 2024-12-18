@@ -46,6 +46,8 @@ struct MyInvoiceView: View {
 
 private struct AddInvoiceFloatButton: View {
     @State private var showAddOption = false
+    @State private var showScanPage: Bool = false
+    @State private var showAddForm: Bool = false
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 16) {
@@ -87,6 +89,9 @@ private struct AddInvoiceFloatButton: View {
                     .onTapGesture(perform: toggleShowAddOption)
             }
         }
+        .navigationDestination(isPresented: $showAddForm) {
+            AddInvoiceFormView(service: InvoiceManager.shared)
+        }
     }
 
     private func toggleShowAddOption() {
@@ -96,10 +101,12 @@ private struct AddInvoiceFloatButton: View {
     }
 
     private func onClickScanAdd() {
+        showScanPage = true
         toggleShowAddOption()
     }
 
     private func onClickManualAdd() {
+        showAddForm = true
         toggleShowAddOption()
     }
 }
