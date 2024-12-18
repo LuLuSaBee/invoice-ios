@@ -18,8 +18,11 @@ struct InvoiceFormView: View {
     }
 
     var body: some View {
-        VStack {
+        VStack(spacing: 16) {
+            DatePicker("發票日期", selection: $viewModel.dateField.value, displayedComponents: .date)
             TextField("商家名稱", text: $viewModel.shopNameField.value)
+                .submitLabel(.next)
+                .onSubmit(moveFocused)
                 .modifier(InvoiceFormTextFieldModifier(
                     focusedField: $focusedField,
                     equals: .shopName,
@@ -29,6 +32,8 @@ struct InvoiceFormView: View {
                 TextField("發票號碼", text: $viewModel.numberPrefixField.value)
                     .keyboardType(.alphabet)
                     .textCase(.uppercase)
+                    .submitLabel(.next)
+                    .onSubmit(moveFocused)
                     .modifier(InvoiceFormTextFieldModifier(
                         focusedField: $focusedField,
                         equals: .numberPrefix,
@@ -38,17 +43,40 @@ struct InvoiceFormView: View {
                 Text("-").padding(.vertical, 8)
                 TextField("發票號碼", text: $viewModel.numberSuffixField.value)
                     .keyboardType(.numberPad)
+                    .submitLabel(.next)
                     .modifier(InvoiceFormTextFieldModifier(
                         focusedField: $focusedField,
                         equals: .numberSuffix,
                         errorMessage: viewModel.numberSuffixField.errorMessage
                     ))
             }
+            TextField("消費金額", text: .init(get: {
+                "$" + viewModel.amountField.value.formatted(.number)
+            }, set: { value in
+                if let number = Int(value.filter { $0.isNumber }) {
+                    viewModel.amountField.value = number
+                } else {
+                    viewModel.amountField.value = 0
+                }
+            }))
+            .keyboardType(.numberPad)
+            .submitLabel(.next)
+            .modifier(InvoiceFormTextFieldModifier(
+                focusedField: $focusedField,
+                equals: .amount,
+                errorMessage: viewModel.amountField.errorMessage
+            ))
         }
         .padding(16)
-        .background(Color.generalBackground)
         .onAppear { focusedField = .shopName }
         .onReceive(viewModel.shouldMoveFocusSubject.eraseToAnyPublisher(), perform: moveFocused)
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("完成") { focusedField = nil }
+                Button("下一步") { moveFocused() }
+            }
+        }
     }
 
     private func moveFocused() {
@@ -78,6 +106,8 @@ private struct InvoiceFormTextFieldModifier<T: Hashable>: ViewModifier {
                 .focused(focusedField, equals: equals)
                 .padding(8)
                 .background(RoundedRectangle(cornerRadius: 8).stroke(borderColor, lineWidth: 2))
+                .contentShape(Rectangle())
+                .onTapGesture { focusedField.wrappedValue = equals }
             if let message = errorMessage, focusedField.wrappedValue != equals {
                 HStack {
                     Image(systemName: "info.circle")
