@@ -11,7 +11,6 @@ import SwiftData
 enum InvoiceType: String, Codable {
     case manual
     case scan
-    case carrier
 }
 
 @Model
