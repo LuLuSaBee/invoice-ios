@@ -116,14 +116,13 @@ private struct AddOptionButton: View {
                 image
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 32, height: 32)
+                    .frame(width: 24, height: 24)
                     .padding(12)
                     .foregroundStyle(Color.white)
                     .background(Color.accentColor)
                     .clipShape(Circle())
-                    .bold()
             }
-            .padding(.trailing, 4)
+            .padding(.trailing, 8)
         }
     }
 }
