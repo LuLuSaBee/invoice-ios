@@ -32,15 +32,22 @@ struct InvoiceListView: View {
     }
 
     @ViewBuilder func sectionHeader(title: String, amount: Int) -> some View {
-        HStack {
-            Text(title)
-            Spacer()
-            Text("$\(amount.formatted(.number))")
+        VStack(spacing: 0) {
+            HStack {
+                Text(title)
+                Spacer()
+                Text("$\(amount.formatted(.number))")
+            }
+            .font(.headline)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(Color.generalBackground)
+
+            Rectangle()
+                .frame(height: 1)
+                .foregroundColor(.gray)
+                .opacity(0.3)
         }
-        .font(.headline)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color.generalBackground)
     }
 
     @ViewBuilder func invoiceCell(_ invoice: Invoice) -> some View {
