@@ -7,69 +7,181 @@
 
 import Foundation
 import SwiftUI
+import SwiftData
 
 struct InvoiceFormView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var keyboardMonitor = KeyboardMonitor()
+    @State private var viewModel: InvoiceFormViewModel
+
+    private let mode: InvoiceFormViewModel.Mode
+    private let service: InvoiceServiceable
+
+    init(mode: InvoiceFormViewModel.Mode, service: InvoiceServiceable) {
+        self.mode = mode
+        self.service = service
+        self.viewModel = InvoiceFormViewModel(mode: mode, service: service)
+    }
+
+    var body: some View {
+        VStack {
+            FormView(viewModel: viewModel)
+        }
+        .background(Color.generalBackground)
+        .navigationTitle(self.mode.title)
+        .toolbarRole(.editor)
+        .toolbarVisibility(.hidden, for: .tabBar)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if !keyboardMonitor.isKeyboardVisible {
+                VStack {
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(.gray)
+                        .opacity(0.3)
+
+                    Text("儲存發票")
+                        .font(.body)
+                        .frame(maxWidth: .infinity)
+                        .foregroundColor(.white)
+                        .padding(.vertical, 8)
+                        .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 8))
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            viewModel.save()
+                            dismiss()
+                        }
+                        .padding(.horizontal, 16)
+
+                    if case .add = mode {
+                        Text("儲存並新增下一筆")
+                            .font(.body)
+                            .frame(maxWidth: .infinity)
+                            .foregroundColor(.accentColor)
+                            .padding(.vertical, 8)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                viewModel.save()
+                                viewModel = InvoiceFormViewModel(mode: .add, service: service)
+                            }
+                            .padding(.horizontal, 16)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .ignoresSafeArea(.keyboard, edges: .bottom)
+                .background(Color.generalBackground)
+            }
+        }
+    }
+}
+
+private struct FormView: View {
     @ObservedObject var viewModel: InvoiceFormViewModel
 
     @FocusState private var focusedField: FocusableField?
 
     private enum FocusableField: Hashable {
-        case shopName, numberPrefix, numberSuffix, amount
+        case shopName, numberPrefix, numberSuffix, amount, detail(id: PersistentIdentifier)
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            DatePicker("發票日期", selection: $viewModel.dateField.value, displayedComponents: .date)
-            TextField("商家名稱", text: $viewModel.shopNameField.value)
-                .submitLabel(.next)
-                .onSubmit(moveFocused)
-                .modifier(InvoiceFormTextFieldModifier(
-                    focusedField: $focusedField,
-                    equals: .shopName,
-                    errorMessage: viewModel.shopNameField.errorMessage
-                ))
-            HStack(alignment: .top) {
-                TextField("發票號碼", text: $viewModel.numberPrefixField.value)
-                    .textInputAutocapitalization(.characters)
-                    .keyboardType(.alphabet)
-                    .textCase(.uppercase)
+        ScrollView {
+            VStack(spacing: 16) {
+                DatePicker("發票日期", selection: $viewModel.dateField.value, displayedComponents: .date)
+                TextField("商家名稱", text: $viewModel.shopNameField.value)
                     .submitLabel(.next)
                     .onSubmit(moveFocused)
                     .modifier(InvoiceFormTextFieldModifier(
                         focusedField: $focusedField,
-                        equals: .numberPrefix,
-                        errorMessage: viewModel.numberPrefixField.errorMessage
+                        equals: .shopName,
+                        errorMessage: viewModel.shopNameField.errorMessage
                     ))
-                    .frame(width: 120)
-                Text("-").padding(.vertical, 8)
-                TextField("發票號碼", text: $viewModel.numberSuffixField.value)
-                    .keyboardType(.numberPad)
-                    .submitLabel(.next)
-                    .modifier(InvoiceFormTextFieldModifier(
-                        focusedField: $focusedField,
-                        equals: .numberSuffix,
-                        errorMessage: viewModel.numberSuffixField.errorMessage
-                    ))
-            }
-            TextField("消費金額", text: .init(get: {
-                "$" + viewModel.amountField.value.formatted(.number)
-            }, set: { value in
-                if let number = Int(value.filter { $0.isNumber }) {
-                    viewModel.amountField.value = number
-                } else {
-                    viewModel.amountField.value = 0
+
+                HStack(alignment: .top) {
+                    TextField("發票號碼", text: $viewModel.numberPrefixField.value)
+                        .textInputAutocapitalization(.characters)
+                        .keyboardType(.alphabet)
+                        .textCase(.uppercase)
+                        .textInputAutocapitalization(.never)
+                        .submitLabel(.next)
+                        .onSubmit(moveFocused)
+                        .modifier(InvoiceFormTextFieldModifier(
+                            focusedField: $focusedField,
+                            equals: .numberPrefix,
+                            errorMessage: viewModel.numberPrefixField.errorMessage
+                        ))
+                        .frame(width: 120)
+                    Text("-").padding(.vertical, 8)
+                    TextField("發票號碼", text: $viewModel.numberSuffixField.value)
+                        .keyboardType(.numberPad)
+                        .submitLabel(.next)
+                        .modifier(InvoiceFormTextFieldModifier(
+                            focusedField: $focusedField,
+                            equals: .numberSuffix,
+                            errorMessage: viewModel.numberSuffixField.errorMessage
+                        ))
                 }
-            }))
-            .keyboardType(.numberPad)
-            .submitLabel(.next)
-            .modifier(InvoiceFormTextFieldModifier(
-                focusedField: $focusedField,
-                equals: .amount,
-                errorMessage: viewModel.amountField.errorMessage
-            ))
+
+                TextField("消費金額", text: .init(get: {
+                    "$" + viewModel.amountField.value.formatted(.number)
+                }, set: { value in
+                    if let number = Int(value.filter { $0.isNumber }) {
+                        viewModel.amountField.value = number
+                    } else {
+                        viewModel.amountField.value = 0
+                    }
+                }))
+                .keyboardType(.numberPad)
+                .submitLabel(.next)
+                .modifier(InvoiceFormTextFieldModifier(
+                    focusedField: $focusedField,
+                    equals: .amount,
+                    errorMessage: viewModel.amountField.errorMessage
+                ))
+
+                HStack {
+                    Text("消費明細")
+                    Spacer()
+                    Button("新增明細") {
+                        let detail = viewModel.addDetail()
+                        focusedField = .detail(id: detail.id)
+                    }
+                    .buttonStyle(.bordered)
+                }
+
+                ForEach(Array(viewModel.details.enumerated()), id: \.element.id) { (index, detail) in
+                    HStack {
+                        TextField("明細", text: .init(get: {
+                            detail.name
+                        }, set: {
+                            detail.name = $0
+                        }))
+                        .submitLabel(.continue)
+                        .onSubmit {
+                            if index == viewModel.details.count - 1 {
+                                let newDetail = viewModel.addDetail()
+                                focusedField = .detail(id: newDetail.id)
+                            } else {
+                                focusedField = .detail(id: viewModel.details[index + 1].id)
+                            }
+                        }
+                        .modifier(InvoiceFormTextFieldModifier(
+                            focusedField: $focusedField,
+                            equals: .detail(id: detail.id),
+                            errorMessage: viewModel.amountField.errorMessage
+                        ))
+
+                        Button(action: {
+                            viewModel.deleteDetail(at: detail)
+                        }, label: {
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                        })
+                    }
+                    .id(detail.id)
+                }
+            }
+            .padding(16)
         }
-        .padding(16)
-        .onAppear { focusedField = .shopName }
         .onReceive(viewModel.shouldMoveFocusSubject.eraseToAnyPublisher(), perform: moveFocused)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
@@ -88,7 +200,7 @@ struct InvoiceFormView: View {
             focusedField = .numberSuffix
         case .numberSuffix:
             focusedField = .amount
-        case .amount:
+        case .amount, .detail:
             focusedField = nil
         case .none:
             break
@@ -133,5 +245,5 @@ private struct InvoiceFormTextFieldModifier<T: Hashable>: ViewModifier {
 }
 
 #Preview {
-    InvoiceFormView(viewModel: .init(mode: .add, service: InvoiceManager.shared))
+    InvoiceFormView(mode: .add, service: InvoiceManager.shared)
 }

@@ -21,6 +21,8 @@ protocol InvoiceFormViewModelProtocol: ObservableObject {
     var details: [InvoiceDetail] { get }
     var isLoading: Bool { get }
 
+    func addDetail() -> InvoiceDetail
+    func deleteDetail(at detail: InvoiceDetail) -> Void
     func save() -> Void
 }
 
@@ -43,6 +45,13 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
     enum Mode {
         case add
         case edit(Invoice)
+
+        var title: String {
+            switch self {
+            case .add: return "新增發票"
+            case .edit: return "編輯發票"
+            }
+        }
     }
 
     init(mode: Mode, service: InvoiceServiceable) {
@@ -93,6 +102,16 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
         }
     }
 
+    func addDetail() -> InvoiceDetail {
+        let detail = InvoiceDetail(name: "", invoice: self.invoice)
+        self.details.insert(detail, at: 0)
+        return detail
+    }
+
+    func deleteDetail(at detail: InvoiceDetail) {
+        self.details.removeAll { $0.id == detail.id }
+    }
+
     func save() {
         self.isLoading = true
 
@@ -104,6 +123,8 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
         self.invoice.month = Calendar.current.component(.month, from: self.dateField.value)
         self.invoice.day = Calendar.current.component(.day, from: self.dateField.value)
 
+        let details = self.details.filter { !$0.name.isEmpty }
+
         Task { @MainActor [weak self] in
             guard let self = self else { return }
             switch self.mode {
@@ -111,7 +132,7 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
                 self.invoice.details = details
                 self.service.addInvoice(self.invoice)
             case .edit:
-                self.service.updateInvoice(self.invoice, newDetails: self.details)
+                self.service.updateInvoice(self.invoice, newDetails: details)
             }
 
             self.isLoading = false

@@ -90,7 +90,7 @@ private struct AddInvoiceFloatButton: View {
             }
         }
         .navigationDestination(isPresented: $showAddForm) {
-            AddInvoiceFormView(service: InvoiceManager.shared)
+            InvoiceFormView(mode: .add, service: InvoiceManager.shared)
         }
     }
 
