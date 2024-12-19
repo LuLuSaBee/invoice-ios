@@ -30,6 +30,7 @@ struct InvoiceFormView: View {
                 ))
             HStack(alignment: .top) {
                 TextField("發票號碼", text: $viewModel.numberPrefixField.value)
+                    .textInputAutocapitalization(.characters)
                     .keyboardType(.alphabet)
                     .textCase(.uppercase)
                     .submitLabel(.next)
