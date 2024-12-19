@@ -17,6 +17,10 @@ struct InvoiceFormView: View {
     private let mode: InvoiceFormViewModel.Mode
     private let service: InvoiceServiceable
 
+    private var buttonColor: Color {
+        viewModel.isValid ? .accentColor : Color(.systemGray)
+    }
+
     init(mode: InvoiceFormViewModel.Mode, service: InvoiceServiceable) {
         self.mode = mode
         self.service = service
@@ -44,19 +48,20 @@ struct InvoiceFormView: View {
                         .frame(maxWidth: .infinity)
                         .foregroundColor(.white)
                         .padding(.vertical, 8)
-                        .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 8))
+                        .background(buttonColor, in: RoundedRectangle(cornerRadius: 8))
                         .contentShape(Rectangle())
                         .onTapGesture {
                             viewModel.save()
                             dismiss()
                         }
                         .padding(.horizontal, 16)
+                        .disabled(!viewModel.isValid)
 
                     if case .add = mode {
                         Text("儲存並新增下一筆")
                             .font(.body)
                             .frame(maxWidth: .infinity)
-                            .foregroundColor(.accentColor)
+                            .foregroundColor(buttonColor)
                             .padding(.vertical, 8)
                             .contentShape(Rectangle())
                             .onTapGesture {
@@ -64,6 +69,7 @@ struct InvoiceFormView: View {
                                 viewModel = InvoiceFormViewModel(mode: .add, service: service)
                             }
                             .padding(.horizontal, 16)
+                            .disabled(!viewModel.isValid)
                     }
                 }
                 .frame(maxWidth: .infinity)

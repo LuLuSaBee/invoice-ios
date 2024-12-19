@@ -19,7 +19,7 @@ protocol InvoiceFormViewModelProtocol: ObservableObject {
     var numberSuffixField: TextFieldViewModel<String> { get }
     var amountField: TextFieldViewModel<Int> { get }
     var details: [InvoiceDetail] { get }
-    var isLoading: Bool { get }
+    var isValid: Bool { get }
 
     func addDetail() -> InvoiceDetail
     func deleteDetail(at detail: InvoiceDetail) -> Void
@@ -33,7 +33,7 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
     @Published var numberSuffixField: TextFieldViewModel<String>
     @Published var amountField: TextFieldViewModel<Int>
     @Published var details: [InvoiceDetail] = []
-    @Published var isLoading: Bool = false
+    @Published var isValid: Bool = false
 
     var shouldMoveFocusSubject = PassthroughSubject<Void, Never>()
 
@@ -100,6 +100,36 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
                 day: Calendar.current.component(.day, from: Date())
             )
         }
+
+        let numberPerfixValidPublisher = numberPrefixField.$errorMessage.zip(numberPrefixField.$value).map { errorMessage, value in
+            errorMessage == nil && !value.isEmpty
+        }
+        let numberSuffixValidPublisher = numberSuffixField.$errorMessage.zip(numberSuffixField.$value).map { errorMessage, value in
+            errorMessage == nil && !value.isEmpty
+        }
+        let amountValidPublisher = amountField.$errorMessage.zip(amountField.$value).map { errorMessage, value in
+            errorMessage == nil && value >= 0
+        }
+
+        Publishers.CombineLatest3(numberPerfixValidPublisher, numberSuffixValidPublisher, amountValidPublisher)
+            .map { $0 && $1 && $2 }
+            .assign(to: &$isValid)
+
+        numberPrefixField.$value
+            .filter { $0.count == 2 }
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                self.shouldMoveFocusSubject.send()
+            }
+            .store(in: &cancellables)
+
+        numberSuffixField.$value
+            .filter { $0.count == 8 }
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                self.shouldMoveFocusSubject.send()
+            }
+            .store(in: &cancellables)
     }
 
     func addDetail() -> InvoiceDetail {
@@ -113,8 +143,6 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
     }
 
     func save() {
-        self.isLoading = true
-
         self.invoice.shopName = self.shopNameField.value
         self.invoice.numberPrefix = self.numberPrefixField.value
         self.invoice.numberSuffix = self.numberSuffixField.value
@@ -134,8 +162,6 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
             case .edit:
                 self.service.updateInvoice(self.invoice, newDetails: details)
             }
-
-            self.isLoading = false
         }
     }
 }
