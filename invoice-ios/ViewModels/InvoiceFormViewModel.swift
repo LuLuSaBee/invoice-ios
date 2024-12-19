@@ -81,7 +81,7 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
         }
 
         if case let .edit(invoice) = mode,
-           let date = DateComponents(year: invoice.year, month: invoice.month, day: invoice.day).date {
+           let date = Calendar.current.date(from: DateComponents(year: invoice.year, month: invoice.month, day: invoice.day)) {
             self.invoice = invoice
             self.shopNameField.value = invoice.shopName
             self.dateField.value = date

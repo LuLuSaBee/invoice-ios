@@ -13,6 +13,7 @@ struct InvoiceListView: View {
     @ObservedObject var viewModel: InvoiceListViewModel
     var groupingOption: InvoiceGroupingOption
 
+    @State private var selectedInvoice: Invoice?
     @State private var sectionDatas: [SectionData] = []
     private var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -94,6 +95,10 @@ struct InvoiceListView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 8)
         .padding(.horizontal, 16)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            selectedInvoice = invoice
+        }
     }
 
     var body: some View {
@@ -133,6 +138,9 @@ struct InvoiceListView: View {
         .onChange(of: viewModel.invoices) { updateData() }
         .onChange(of: groupingOption) { updateData() }
         .onAppear(perform: updateData)
+        .navigationDestination(item: $selectedInvoice) { invoice in
+            InvoiceFormView(mode: .edit(invoice), service: InvoiceManager.shared)
+        }
     }
 
     private func formatDate(_ date: Date, formatter: String) -> String {
