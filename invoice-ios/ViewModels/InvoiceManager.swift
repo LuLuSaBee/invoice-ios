@@ -23,24 +23,28 @@ final class InvoiceManager: InvoiceServiceable {
     private var cancellables = Set<AnyCancellable>()
     private var publishers: [String: WeakBox<CurrentValueSubject<[Invoice],Never>>] = [:]
 
-    private init() {
-        do {
-            container = try ModelContainer(for: Invoice.self, InvoiceDetail.self)
-            setupContextListener()
-        } catch {
-            fatalError("Failed to initialize ModelContainer: \(error)")
-        }
-
-        let context = container.mainContext
-        let existingInvoices = try? context.fetch(FetchDescriptor<Invoice>())
-        if existingInvoices?.isEmpty ?? true {
-            Invoice.sampleData.forEach { context.insert($0) }
+    init(container: ModelContainer? = nil) {
+        if let container = container {
+            self.container = container
+        } else {
             do {
-                try context.save()
+                self.container = try ModelContainer(for: Invoice.self, InvoiceDetail.self)
+                let context = self.container.mainContext
+                let existingInvoices = try? context.fetch(FetchDescriptor<Invoice>())
+                if existingInvoices?.isEmpty ?? true {
+                    Invoice.sampleData.forEach { context.insert($0) }
+                    do {
+                        try context.save()
+                    } catch {
+                        fatalError("Could not save sample data: \(error)")
+                    }
+                }
             } catch {
-                fatalError("Could not save sample data: \(error)")
+                fatalError("Failed to initialize ModelContainer: \(error)")
             }
         }
+
+        self.setupContextListener()
     }
 
     // MARK: - Listen Context Change
