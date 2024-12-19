@@ -13,7 +13,7 @@ import Combine
     func getInvoicePublisher(byMonth month: Int, year: Int) -> AnyPublisher<[Invoice], Never>
     func addInvoice(_ invoice: Invoice)
     func deleteInvoice(_ invoice: Invoice)
-    func updateInvoice(_ invoice: Invoice)
+    func updateInvoice(_ invoice: Invoice, newDetails: [InvoiceDetail])
 }
 
 final class InvoiceManager: InvoiceServiceable {
@@ -119,7 +119,12 @@ final class InvoiceManager: InvoiceServiceable {
         saveContext()
     }
 
-    func updateInvoice(_ invoice: Invoice) {
+    func updateInvoice(_ invoice: Invoice, newDetails: [InvoiceDetail]) {
+        let removedDetails = invoice.details.filter { !newDetails.contains($0) }
+        removedDetails.forEach { container.mainContext.delete($0) }
+
+        invoice.details = newDetails
+
         saveContext()
     }
 }

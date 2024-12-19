@@ -107,8 +107,11 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
         Task { @MainActor [weak self] in
             guard let self = self else { return }
             switch self.mode {
-            case .add: self.service.addInvoice(self.invoice)
-            case .edit: self.service.updateInvoice(self.invoice)
+            case .add:
+                self.invoice.details = details
+                self.service.addInvoice(self.invoice)
+            case .edit:
+                self.service.updateInvoice(self.invoice, newDetails: self.details)
             }
 
             self.isLoading = false
