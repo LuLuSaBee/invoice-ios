@@ -32,24 +32,22 @@ class InvoiceManagerTests {
     }
 
     @Test("Add Invoice")
-    func testAddInvoice() {
-        var invoices: [Invoice] = []
+    func addInvoice() async throws{
         let invoice = self.invoice
         invoice.numberSuffix = "00000001"
 
         invoiceManager.getInvoicePublisher(byMonth: invoice.month, year: invoice.year)
-            .sink { invoices = $0 }
+            .sink { invoices in
+                #expect(invoices.contains(where: { $0.id == invoice.id }))
+            }
             .store(in: &cancellables)
 
-        invoiceManager.addInvoice(invoice)
-
-        #expect(invoices.contains(where: { $0.id == invoice.id }))
+        try await invoiceManager.addInvoice(invoice)
     }
 
     @Test("Update Invoice")
-    func testUpdateInvoice() {
+    func updateInvoice() async throws {
         var invoices: [Invoice] = []
-
         let invoice = self.invoice
         invoice.shopName = "Test Update"
 
@@ -57,32 +55,31 @@ class InvoiceManagerTests {
             .sink { invoices = $0 }
             .store(in: &cancellables)
 
-        invoiceManager.updateInvoice(invoice, newDetails: invoice.details)
+        try await invoiceManager.updateInvoice(invoice, newDetails: invoice.details)
 
-        #expect(
-            invoices.contains(where: { $0.id == invoice.id && $0.shopName == "Test Update"}),
-            "Update invoice shopName success."
-        )
+        #expect(invoices.contains(where: { $0.id == invoice.id && $0.shopName == "Test Update"}))
 
         let details = [InvoiceDetail(name: "Detail 1", invoice: invoice), InvoiceDetail(name: "Detail 2", invoice: invoice)]
-        invoiceManager.updateInvoice(invoice, newDetails: details)
+        try await invoiceManager.updateInvoice(invoice, newDetails: details)
 
-        print(invoices)
-
-        #expect(invoices.contains(where: { $0.id == invoice.id && $0.details.contains(details)}))
+        #expect(invoices.contains(where: {
+            $0.id == invoice.id &&
+            $0.details.contains(details[0]) &&
+            $0.details.contains(details[1])
+        }))
     }
 
     @Test("Delete Invoice")
-    func testDeleteInvoice() {
+    func deleteInvoice() async throws {
         var invoices: [Invoice] = []
 
-        invoiceManager.getInvoicePublisher(byMonth: 12, year: 2024)
+        invoiceManager.getInvoicePublisher(byMonth: invoice.month, year: invoice.year)
             .sink { invoices = $0 }
             .store(in: &cancellables)
 
         #expect(invoices.contains(where: { $0.id == self.invoice.id }))
 
-        invoiceManager.deleteInvoice(invoice)
+        try await invoiceManager.deleteInvoice(invoice)
 
         #expect(invoices.isEmpty)
     }
