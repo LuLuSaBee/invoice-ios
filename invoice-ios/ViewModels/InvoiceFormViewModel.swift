@@ -116,6 +116,7 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
             .assign(to: &$isValid)
 
         numberPrefixField.$value
+            .removeDuplicates()
             .filter { $0.count == 2 }
             .sink { [weak self] _ in
                 guard let self = self else { return }
@@ -124,6 +125,7 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
             .store(in: &cancellables)
 
         numberSuffixField.$value
+            .removeDuplicates()
             .filter { $0.count == 8 }
             .sink { [weak self] _ in
                 guard let self = self else { return }
@@ -142,6 +144,17 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
         self.details.removeAll { $0.id == detail.id }
     }
 
+    func delete() {
+        Task { @MainActor [weak self] in
+            do {
+                guard let self = self else { return }
+                try await self.service.deleteInvoice(invoice)
+            } catch {
+                print("Failed to save invoice: \(error)")
+            }
+        }
+    }
+
     func save() {
         self.invoice.shopName = self.shopNameField.value
         self.invoice.numberPrefix = self.numberPrefixField.value
@@ -155,12 +168,16 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
 
         Task { @MainActor [weak self] in
             guard let self = self else { return }
-            switch self.mode {
-            case .add:
-                self.invoice.details = details
-                self.service.addInvoice(self.invoice)
-            case .edit:
-                self.service.updateInvoice(self.invoice, newDetails: details)
+            do {
+                switch self.mode {
+                case .add:
+                    self.invoice.details = details
+                    try await self.service.addInvoice(self.invoice)
+                case .edit:
+                    try await self.service.updateInvoice(self.invoice, newDetails: details)
+                }
+            } catch {
+                print("Failed to save invoice: \(error)")
             }
         }
     }

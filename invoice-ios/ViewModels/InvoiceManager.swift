@@ -11,13 +11,15 @@ import Combine
 
 @MainActor protocol InvoiceServiceable {
     func getInvoicePublisher(byMonth month: Int, year: Int) -> AnyPublisher<[Invoice], Never>
-    func addInvoice(_ invoice: Invoice)
-    func deleteInvoice(_ invoice: Invoice)
-    func updateInvoice(_ invoice: Invoice, newDetails: [InvoiceDetail])
+    func addInvoice(_ invoice: Invoice) async throws
+    func deleteInvoice(_ invoice: Invoice) async throws
+    func updateInvoice(_ invoice: Invoice, newDetails: [InvoiceDetail]) async throws
 }
 
 final class InvoiceManager: InvoiceServiceable {
     static let shared = InvoiceManager()
+
+    @Published private var isSaving = false
 
     private let container: ModelContainer
     private var cancellables = Set<AnyCancellable>()
@@ -52,7 +54,9 @@ final class InvoiceManager: InvoiceServiceable {
         NotificationCenter.default.publisher(for: ModelContext.didSave)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.notifyAllPublishers()
+                guard let self = self else { return }
+                self.notifyAllPublishers()
+                self.isSaving = false
             }
             .store(in: &cancellables)
     }
@@ -84,13 +88,18 @@ final class InvoiceManager: InvoiceServiceable {
         }
     }
 
-    private func saveContext() {
+    private func saveContext() async throws {
         do {
             try container.mainContext.save()
+            self.isSaving = true
+
+            for await value in self.$isSaving.values where value {
+                break
+            }
         } catch {
             print("Failed to save context: \(error)")
+            throw error
         }
-        notifyAllPublishers()
     }
 
     // MARK: - Public Methods
@@ -113,22 +122,22 @@ final class InvoiceManager: InvoiceServiceable {
             .eraseToAnyPublisher()
     }
 
-    func addInvoice(_ invoice: Invoice) {
+    func addInvoice(_ invoice: Invoice) async throws {
         container.mainContext.insert(invoice)
-        saveContext()
+        try await saveContext()
     }
 
-    func deleteInvoice(_ invoice: Invoice) {
+    func deleteInvoice(_ invoice: Invoice) async throws {
         container.mainContext.delete(invoice)
-        saveContext()
+        try await saveContext()
     }
 
-    func updateInvoice(_ invoice: Invoice, newDetails: [InvoiceDetail]) {
+    func updateInvoice(_ invoice: Invoice, newDetails: [InvoiceDetail]) async throws {
         let removedDetails = invoice.details.filter { !newDetails.contains($0) }
         removedDetails.forEach { container.mainContext.delete($0) }
 
         invoice.details = newDetails
 
-        saveContext()
+        try await saveContext()
     }
 }
