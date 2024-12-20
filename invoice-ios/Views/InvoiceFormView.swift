@@ -14,6 +14,8 @@ struct InvoiceFormView: View {
     @StateObject private var keyboardMonitor = KeyboardMonitor()
     @State private var viewModel: InvoiceFormViewModel
 
+    @State private var showDeleteDialog = false
+
     private let mode: InvoiceFormViewModel.Mode
     private let service: InvoiceServiceable
 
@@ -35,6 +37,22 @@ struct InvoiceFormView: View {
         .navigationTitle(self.mode.title)
         .toolbarRole(.editor)
         .toolbarVisibility(.hidden, for: .tabBar)
+        .toolbar {
+            if case .edit = mode {
+                ToolbarItem(placement: .navigation) {
+                    Button("刪除") {
+                        showDeleteDialog = true
+                    }
+                }
+            }
+        }
+        .alert("確認刪除?", isPresented: $showDeleteDialog) {
+            Button("確認") {
+                viewModel.delete()
+                dismiss()
+            }
+            Button("取消", role: .cancel) {}
+        }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if !keyboardMonitor.isKeyboardVisible {
                 VStack {
