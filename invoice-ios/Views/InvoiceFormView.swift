@@ -182,8 +182,7 @@ private struct FormView: View {
                         .submitLabel(.continue)
                         .onSubmit {
                             if index == viewModel.details.count - 1 {
-                                let newDetail = viewModel.addDetail()
-                                focusedField = .detail(id: newDetail.id)
+                                focusedField = nil
                             } else {
                                 focusedField = .detail(id: viewModel.details[index + 1].id)
                             }
