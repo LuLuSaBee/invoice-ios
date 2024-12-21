@@ -12,7 +12,11 @@ import SwiftData
 struct invoice_iosApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if ProcessInfo.processInfo.environment["XCTestBundlePath"] != nil {
+                Text("Running Test")
+            } else {
+                ContentView()
+            }
         }
     }
 }
