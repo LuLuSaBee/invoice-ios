@@ -16,7 +16,7 @@ struct InvoicePeriodProvider {
         return InvoicePeriod(from: startMonth, at: year)
     }
 
-    static func last(by period: InvoicePeriod) -> InvoicePeriod {
+    static func previous(by period: InvoicePeriod) -> InvoicePeriod {
         if period.firstMonth == 1 {
             return InvoicePeriod(from: 11, at: period.year - 1)
         } else {

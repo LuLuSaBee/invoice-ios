@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 protocol InvoiceRepository {
-    func fetchInvoices(forYear year: Int, month: Int) async throws -> [Invoice]
+    func fetchInvoices() async throws -> [Invoice]
     func insertInvoice(_ invoice: Invoice) async
     func deleteInvoice(_ invoice: Invoice) async
 }
@@ -25,9 +25,8 @@ actor SwiftDataInvoiceRepository: InvoiceRepository, Sendable {
         self.modelContainer = container
     }
 
-    func fetchInvoices(forYear year: Int, month: Int) async throws -> [Invoice] {
+    func fetchInvoices() async throws -> [Invoice] {
         let fetchDescriptor = FetchDescriptor<Invoice>(
-            predicate: #Predicate { $0.year == year && $0.month == month },
             sortBy: [SortDescriptor(\.day, order: .reverse)]
         )
 
