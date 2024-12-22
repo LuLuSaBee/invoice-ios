@@ -7,10 +7,10 @@
 
 import Foundation
 
-struct InvoicePeriod {
-    var year: Int
-    var firstMonth: Int
-    var secondMonth: Int
+struct InvoicePeriod: Hashable {
+    private(set) var year: Int
+    private(set) var firstMonth: Int
+    private(set) var secondMonth: Int
 
     var description: String {
         "\(year) 年 \(firstMonth) ~ \(secondMonth)月"
