@@ -113,25 +113,49 @@ struct InvoiceListView<ViewModel: InvoiceListViewModelProtocol>: View {
     }
 
     var body: some View {
-        ScrollView {
-            checkPrize()
+        VStack(spacing: 0) {
+            Text(viewModel.period.description)
+                .font(.footnote)
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity)
+                .foregroundStyle(.primary.opacity(0.8))
+                .background(Color.generalBackground.opacity(0.8))
 
-            ForEach(viewModel.displayData, id: \.title) { section in
-                LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                    Section(header: sectionHeader(title: section.title, amount: section.totalAmount)) {
-                        ForEach(section.invoices, content: invoiceCell)
-                    }
+            if viewModel.displayData.isEmpty {
+                VStack {
+                    checkPrize()
+                    Spacer()
+                    Image(systemName: "truck.box.badge.clock")
+                        .symbolRenderingMode(.hierarchical)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 128, height: 128)
+                    Text("尚無發票紀錄")
+                    Spacer()
                 }
-                .padding(.bottom, 8)
-                .background(Color.generalBackground, in: .rect(cornerRadius: 16))
-            }
+                .padding(.horizontal, 16)
+            } else {
+                ScrollView {
+                    checkPrize()
 
-            Spacer(minLength: 96)
-        }
-        .padding(.horizontal, 16)
-        .scrollIndicators(.hidden)
-        .navigationDestination(item: $selectedInvoice) { invoice in
-            InvoiceFormView(viewModel: viewModel.makeEditInvoiceFormViewModel(invoice: invoice))
+                    ForEach(viewModel.displayData, id: \.title) { section in
+                        LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                            Section(header: sectionHeader(title: section.title, amount: section.totalAmount)) {
+                                ForEach(section.invoices, content: invoiceCell)
+                            }
+                        }
+                        .padding(.bottom, 8)
+                        .background(Color.generalBackground, in: .rect(cornerRadius: 16))
+                    }
+
+                    Spacer(minLength: 96)
+                }
+                .padding(.horizontal, 16)
+                .scrollIndicators(.hidden)
+                .navigationDestination(item: $selectedInvoice) { invoice in
+                    InvoiceFormPageView(viewModel: viewModel.makeEditInvoiceFormPageViewModel(invoice: invoice))
+                }
+            }
         }
     }
 

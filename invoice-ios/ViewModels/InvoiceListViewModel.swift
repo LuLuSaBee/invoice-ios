@@ -10,13 +10,13 @@ import Combine
 import SwiftUI
 
 protocol InvoiceListViewModelProtocol: ObservableObject, Identifiable {
-    associatedtype FormViewModel: InvoiceFormViewModelProtocol
+    associatedtype FormViewModel: InvoiceFormPageViewModelProtocol
 
     var groupOption: InvoiceGroupingOption { get }
     var displayData: [InvoiceSectionData] { get }
     var period: InvoicePeriod { get }
 
-    func makeEditInvoiceFormViewModel(invoice: Invoice) -> FormViewModel
+    func makeEditInvoiceFormPageViewModel(invoice: Invoice) -> FormViewModel
     func refresh() async
 }
 
@@ -27,7 +27,7 @@ class InvoiceListViewModel: InvoiceListViewModelProtocol {
 
     var period: InvoicePeriod
 
-    typealias FormViewModel = InvoiceFormViewModel
+    typealias FormViewModel = InvoiceFormPageViewModel
 
     private var navigationPath: NavigationPath
     private var provider: InvoiceProvider
@@ -86,8 +86,8 @@ class InvoiceListViewModel: InvoiceListViewModelProtocol {
         .sorted { $0.title > $1.title }
     }
 
-    func makeEditInvoiceFormViewModel(invoice: Invoice) -> FormViewModel {
-        InvoiceFormViewModel(mode: .edit(invoice), provider: self.provider)
+    func makeEditInvoiceFormPageViewModel(invoice: Invoice) -> FormViewModel {
+        InvoiceFormPageViewModel(mode: .edit(invoice), provider: self.provider)
     }
 
     func refresh() async {

@@ -1,5 +1,5 @@
 //
-//  InvoiceFormView.swift
+//  InvoiceFormPageView.swift
 //  invoice-ios
 //
 //  Created by lewisliu on 2024/12/18.
@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import SwiftData
 
-struct InvoiceFormView<ViewModel: InvoiceFormViewModelProtocol>: View {
+struct InvoiceFormPageView<ViewModel: InvoiceFormPageViewModelProtocol>: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var keyboardMonitor = KeyboardMonitor()
     private var viewModel: ViewModel
@@ -93,7 +93,7 @@ struct InvoiceFormView<ViewModel: InvoiceFormViewModelProtocol>: View {
     }
 }
 
-private struct FormView<ViewModel: InvoiceFormViewModelProtocol>: View {
+private struct FormView<ViewModel: InvoiceFormPageViewModelProtocol>: View {
     @ObservedObject var viewModel: ViewModel
 
     @FocusState private var focusedField: FocusableField?

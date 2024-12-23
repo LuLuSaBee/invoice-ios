@@ -1,5 +1,5 @@
 //
-//  InvoiceFormViewModel.swift
+//  InvoiceFormPageViewModel.swift
 //  invoice-ios
 //
 //  Created by lewisliu on 2024/12/18.
@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 import Combine
 
-protocol InvoiceFormViewModelProtocol: ObservableObject {
+protocol InvoiceFormPageViewModelProtocol: ObservableObject {
     var shouldMoveFocusSubject: PassthroughSubject<Void, Never> { get }
     var shopNameField: TextFieldViewModel<String> { get set }
     var dateField: TextFieldViewModel<Date> { get set }
@@ -29,7 +29,7 @@ protocol InvoiceFormViewModelProtocol: ObservableObject {
     func save() -> Void
 }
 
-class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
+class InvoiceFormPageViewModel: InvoiceFormPageViewModelProtocol {
     @Published var shopNameField: TextFieldViewModel<String>
     @Published var dateField: TextFieldViewModel<Date>
     @Published var numberPrefixField: TextFieldViewModel<String>
@@ -45,8 +45,8 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
     var shouldMoveFocusSubject = PassthroughSubject<Void, Never>()
 
     private let mode: Mode
-    private let invoice: Invoice
     private let provider: InvoiceProvider
+    private var invoice: Invoice
     private var cancellables = Set<AnyCancellable>()
 
     enum Mode: Equatable {
@@ -170,10 +170,23 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
 
         // TODO: Save invoice or throw error
     }
+
+    func reset() {
+        self.details = []
+        self.invoice = .init(
+            shopName: "",
+            numberPrefix: "",
+            numberSuffix: "",
+            amount: 0,
+            year: Calendar.current.component(.year, from: Date()),
+            month: Calendar.current.component(.month, from: Date()),
+            day: Calendar.current.component(.day, from: Date())
+        )
+    }
 }
 
-extension InvoiceFormViewModel: Hashable {
-    static func ==(lhs: InvoiceFormViewModel, rhs: InvoiceFormViewModel) -> Bool {
+extension InvoiceFormPageViewModel: Hashable {
+    static func ==(lhs: InvoiceFormPageViewModel, rhs: InvoiceFormPageViewModel) -> Bool {
         lhs.hashValue == rhs.hashValue
     }
 

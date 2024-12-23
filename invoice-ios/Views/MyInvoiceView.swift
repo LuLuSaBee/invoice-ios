@@ -30,7 +30,7 @@ struct MyInvoiceView<ViewModel: MyInvoiceViewModelProtocol>: View {
         .navigationTitle("我的發票")
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $showAddForm) {
-            InvoiceFormView(viewModel: viewModel.makeAddInvoiceFormViewModel())
+            InvoiceFormPageView(viewModel: viewModel.makeAddInvoiceFormPageViewModel())
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {

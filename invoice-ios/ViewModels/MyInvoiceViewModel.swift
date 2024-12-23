@@ -11,7 +11,7 @@ import SwiftUI
 
 protocol MyInvoiceViewModelProtocol: ObservableObject {
     associatedtype ListViewModel: InvoiceListViewModelProtocol
-    associatedtype FormViewModel: InvoiceFormViewModelProtocol
+    associatedtype FormViewModel: InvoiceFormPageViewModelProtocol
 
     var navigationPath: NavigationPath { get set }
     var groupingOption: InvoiceGroupingOption { get }
@@ -20,7 +20,7 @@ protocol MyInvoiceViewModelProtocol: ObservableObject {
 
     func loadMore()
     func tapGroupingOption()
-    func makeAddInvoiceFormViewModel() -> FormViewModel
+    func makeAddInvoiceFormPageViewModel() -> FormViewModel
 }
 
 class MyInvoiceViewModel: MyInvoiceViewModelProtocol {
@@ -30,7 +30,7 @@ class MyInvoiceViewModel: MyInvoiceViewModelProtocol {
     @Published var currentList: InvoiceListViewModel.ID? = nil
 
     typealias ListViewModel = InvoiceListViewModel
-    typealias FormViewModel = InvoiceFormViewModel
+    typealias FormViewModel = InvoiceFormPageViewModel
 
     private let provider: InvoiceProvider
     private var cancellables = Set<AnyCancellable>()
@@ -65,7 +65,7 @@ class MyInvoiceViewModel: MyInvoiceViewModelProtocol {
         }
     }
 
-    func makeAddInvoiceFormViewModel() -> FormViewModel {
-        InvoiceFormViewModel(mode: .add, provider: provider)
+    func makeAddInvoiceFormPageViewModel() -> FormViewModel {
+        InvoiceFormPageViewModel(mode: .add, provider: provider)
     }
 }
