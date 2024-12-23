@@ -10,19 +10,22 @@ import SwiftData
 import Combine
 
 protocol InvoiceFormViewModelProtocol: ObservableObject {
-    associatedtype Mode
-
     var shouldMoveFocusSubject: PassthroughSubject<Void, Never> { get }
-    var shopNameField: TextFieldViewModel<String> { get }
-    var dateField: TextFieldViewModel<Date> { get }
-    var numberPrefixField: TextFieldViewModel<String> { get }
-    var numberSuffixField: TextFieldViewModel<String> { get }
-    var amountField: TextFieldViewModel<Int> { get }
+    var shopNameField: TextFieldViewModel<String> { get set }
+    var dateField: TextFieldViewModel<Date> { get set }
+    var numberPrefixField: TextFieldViewModel<String> { get set }
+    var numberSuffixField: TextFieldViewModel<String> { get set }
+    var amountField: TextFieldViewModel<Int> { get set }
     var details: [InvoiceDetail] { get }
     var isValid: Bool { get }
+    var showDeleteOption: Bool { get }
+    var showAddAnotherOption: Bool { get }
+    var pageTitle: String { get }
+
 
     func addDetail() -> InvoiceDetail
     func deleteDetail(at detail: InvoiceDetail) -> Void
+    func delete() -> Void
     func save() -> Void
 }
 
@@ -35,14 +38,18 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
     @Published var details: [InvoiceDetail] = []
     @Published var isValid: Bool = false
 
+    var showDeleteOption: Bool
+    var showAddAnotherOption: Bool
+    var pageTitle: String
+
     var shouldMoveFocusSubject = PassthroughSubject<Void, Never>()
 
     private let mode: Mode
     private let invoice: Invoice
-    private let service: InvoiceServiceable
+    private let provider: InvoiceProvider
     private var cancellables = Set<AnyCancellable>()
 
-    enum Mode {
+    enum Mode: Equatable {
         case add
         case edit(Invoice)
 
@@ -54,9 +61,13 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
         }
     }
 
-    init(mode: Mode, service: InvoiceServiceable) {
-        self.service = service
+    init(mode: Mode, provider: InvoiceProvider) {
+        self.provider = provider
         self.mode = mode
+
+        self.showDeleteOption = mode != .add
+        self.showAddAnotherOption = mode == .add
+        self.pageTitle = mode.title
 
         self.shopNameField = .init(initialValue: "")
         self.dateField = .init(initialValue: Date())
@@ -145,14 +156,7 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
     }
 
     func delete() {
-        Task { @MainActor [weak self] in
-            do {
-                guard let self = self else { return }
-                try await self.service.deleteInvoice(invoice)
-            } catch {
-                print("Failed to save invoice: \(error)")
-            }
-        }
+        self.provider.delete(invoice)
     }
 
     func save() {
@@ -164,21 +168,16 @@ class InvoiceFormViewModel: InvoiceFormViewModelProtocol {
         self.invoice.month = Calendar.current.component(.month, from: self.dateField.value)
         self.invoice.day = Calendar.current.component(.day, from: self.dateField.value)
 
-        let details = self.details.filter { !$0.name.isEmpty }
+        // TODO: Save invoice or throw error
+    }
+}
 
-        Task { @MainActor [weak self] in
-            guard let self = self else { return }
-            do {
-                switch self.mode {
-                case .add:
-                    self.invoice.details = details
-                    try await self.service.addInvoice(self.invoice)
-                case .edit:
-                    try await self.service.updateInvoice(self.invoice, newDetails: details)
-                }
-            } catch {
-                print("Failed to save invoice: \(error)")
-            }
-        }
+extension InvoiceFormViewModel: Hashable {
+    static func ==(lhs: InvoiceFormViewModel, rhs: InvoiceFormViewModel) -> Bool {
+        lhs.hashValue == rhs.hashValue
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
     }
 }

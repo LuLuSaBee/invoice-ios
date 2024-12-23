@@ -9,24 +9,19 @@ import Foundation
 import SwiftUI
 import SwiftData
 
-struct InvoiceFormView: View {
+struct InvoiceFormView<ViewModel: InvoiceFormViewModelProtocol>: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var keyboardMonitor = KeyboardMonitor()
-    @State private var viewModel: InvoiceFormViewModel
+    private var viewModel: ViewModel
 
     @State private var showDeleteDialog = false
-
-    private let mode: InvoiceFormViewModel.Mode
-    private let service: InvoiceServiceable
 
     private var buttonColor: Color {
         viewModel.isValid ? .accentColor : Color(.systemGray)
     }
 
-    init(mode: InvoiceFormViewModel.Mode, service: InvoiceServiceable) {
-        self.mode = mode
-        self.service = service
-        self.viewModel = InvoiceFormViewModel(mode: mode, service: service)
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
     }
 
     var body: some View {
@@ -34,11 +29,11 @@ struct InvoiceFormView: View {
             FormView(viewModel: viewModel)
         }
         .background(Color.generalBackground)
-        .navigationTitle(self.mode.title)
+        .navigationTitle(viewModel.pageTitle)
         .toolbarRole(.editor)
         .toolbarVisibility(.hidden, for: .tabBar)
         .toolbar {
-            if case .edit = mode {
+            if viewModel.showDeleteOption {
                 ToolbarItem(placement: .navigation) {
                     Button("刪除") {
                         showDeleteDialog = true
@@ -75,7 +70,7 @@ struct InvoiceFormView: View {
                         .padding(.horizontal, 16)
                         .disabled(!viewModel.isValid)
 
-                    if case .add = mode {
+                    if viewModel.showAddAnotherOption {
                         Text("儲存並新增下一筆")
                             .font(.body)
                             .frame(maxWidth: .infinity)
@@ -84,7 +79,7 @@ struct InvoiceFormView: View {
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 viewModel.save()
-                                viewModel = InvoiceFormViewModel(mode: .add, service: service)
+//                                viewModel = InvoiceFormViewModel(mode: .add, service: service)
                             }
                             .padding(.horizontal, 16)
                             .disabled(!viewModel.isValid)
@@ -98,8 +93,8 @@ struct InvoiceFormView: View {
     }
 }
 
-private struct FormView: View {
-    @ObservedObject var viewModel: InvoiceFormViewModel
+private struct FormView<ViewModel: InvoiceFormViewModelProtocol>: View {
+    @ObservedObject var viewModel: ViewModel
 
     @FocusState private var focusedField: FocusableField?
 
@@ -265,8 +260,4 @@ private struct InvoiceFormTextFieldModifier<T: Hashable>: ViewModifier {
             return Color(.systemGray).opacity(0.5)
         }
     }
-}
-
-#Preview {
-    InvoiceFormView(mode: .add, service: InvoiceManager.shared)
 }
