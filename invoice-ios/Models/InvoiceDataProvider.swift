@@ -8,10 +8,6 @@
 import Combine
 import SwiftData
 
-enum InvoiceProviderError: Error {
-    case duplicateInvoice
-}
-
 protocol InvoiceProvider {
     var invoicesPublisher: AnyPublisher<[Invoice], Never> { get }
 
