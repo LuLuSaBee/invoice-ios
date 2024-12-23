@@ -12,7 +12,7 @@ import SwiftData
 struct InvoiceFormPageView<ViewModel: InvoiceFormPageViewModelProtocol>: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var keyboardMonitor = KeyboardMonitor()
-    private var viewModel: ViewModel
+    @ObservedObject private var viewModel: ViewModel
 
     @State private var showDeleteDialog = false
 
@@ -43,10 +43,12 @@ struct InvoiceFormPageView<ViewModel: InvoiceFormPageViewModelProtocol>: View {
         }
         .alert("確認刪除?", isPresented: $showDeleteDialog) {
             Button("確認") {
-                viewModel.delete()
-                dismiss()
+                viewModel.delete { dismiss() }
             }
             Button("取消", role: .cancel) {}
+        }
+        .alert("發票號碼重複", isPresented: $viewModel.showDuplicateError) {
+            Button("重新填寫") {}
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if !keyboardMonitor.isKeyboardVisible {
@@ -64,8 +66,7 @@ struct InvoiceFormPageView<ViewModel: InvoiceFormPageViewModelProtocol>: View {
                         .background(buttonColor, in: RoundedRectangle(cornerRadius: 8))
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            viewModel.save()
-                            dismiss()
+                            viewModel.save { dismiss() }
                         }
                         .padding(.horizontal, 16)
                         .disabled(!viewModel.isValid)
@@ -78,8 +79,8 @@ struct InvoiceFormPageView<ViewModel: InvoiceFormPageViewModelProtocol>: View {
                             .padding(.vertical, 8)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                viewModel.save()
-//                                viewModel = InvoiceFormViewModel(mode: .add, service: service)
+                                viewModel.save { dismiss() }
+                                // TODO: Reset form data
                             }
                             .padding(.horizontal, 16)
                             .disabled(!viewModel.isValid)

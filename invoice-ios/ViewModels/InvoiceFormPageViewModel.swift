@@ -21,12 +21,12 @@ protocol InvoiceFormPageViewModelProtocol: ObservableObject {
     var showDeleteOption: Bool { get }
     var showAddAnotherOption: Bool { get }
     var pageTitle: String { get }
-
+    var showDuplicateError: Bool { get set }
 
     func addDetail() -> InvoiceDetail
     func deleteDetail(at detail: InvoiceDetail) -> Void
-    func delete() -> Void
-    func save() -> Void
+    func delete(onComplete: @escaping () -> Void) -> Void
+    func save(onComplete: @escaping () -> Void) -> Void
 }
 
 class InvoiceFormPageViewModel: InvoiceFormPageViewModelProtocol {
@@ -37,6 +37,7 @@ class InvoiceFormPageViewModel: InvoiceFormPageViewModelProtocol {
     @Published var amountField: TextFieldViewModel<Int>
     @Published var details: [InvoiceDetail] = []
     @Published var isValid: Bool = false
+    @Published var showDuplicateError: Bool = false
 
     var showDeleteOption: Bool
     var showAddAnotherOption: Bool
@@ -155,20 +156,32 @@ class InvoiceFormPageViewModel: InvoiceFormPageViewModelProtocol {
         self.details.removeAll { $0.id == detail.id }
     }
 
-    func delete() {
+    func delete(onComplete: @escaping () -> Void) -> Void {
         self.provider.delete(invoice)
+        onComplete()
     }
 
-    func save() {
+    func save(onComplete: @escaping () -> Void) -> Void {
+        let numberPrefix = self.numberPrefixField.value
+        let numberSuffix = self.numberSuffixField.value
+        guard self.provider.validateUniqueInvoiceNumber(self.invoice.id, prefix: numberPrefix, suffix: numberSuffix) else {
+            self.showDuplicateError = true
+            return
+        }
+
         self.invoice.shopName = self.shopNameField.value
-        self.invoice.numberPrefix = self.numberPrefixField.value
-        self.invoice.numberSuffix = self.numberSuffixField.value
+        self.invoice.numberPrefix = numberPrefix
+        self.invoice.numberSuffix = numberSuffix
         self.invoice.amount = self.amountField.value
         self.invoice.year = Calendar.current.component(.year, from: self.dateField.value)
         self.invoice.month = Calendar.current.component(.month, from: self.dateField.value)
         self.invoice.day = Calendar.current.component(.day, from: self.dateField.value)
 
-        // TODO: Save invoice or throw error
+        if case .add = mode {
+            self.provider.insert(self.invoice)
+        }
+
+        onComplete()
     }
 
     func reset() {
