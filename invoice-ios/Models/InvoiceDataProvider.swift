@@ -6,6 +6,7 @@
 //
 
 import Combine
+import SwiftData
 
 enum InvoiceProviderError: Error {
     case duplicateInvoice
@@ -15,7 +16,8 @@ protocol InvoiceProvider {
     var invoicesPublisher: AnyPublisher<[Invoice], Never> { get }
 
     func refresh() async throws
-    func insert(_ invoice: Invoice) throws
+    func validateUniqueInvoiceNumber(_ id: PersistentIdentifier, prefix: String, suffix: String) -> Bool
+    func insert(_ invoice: Invoice)
     func delete(_ invoice: Invoice)
 }
 
@@ -44,11 +46,11 @@ final class InvoiceDataProvider: InvoiceProvider {
         self.invoices = try await repository.fetchInvoices()
     }
 
-    func insert(_ invoice: Invoice) throws {
-        if let _ = self.invoices.first(where: { $0.numberString == invoice.numberString }) {
-            throw InvoiceProviderError.duplicateInvoice
-        }
+    func validateUniqueInvoiceNumber(_ id: PersistentIdentifier, prefix: String, suffix: String) -> Bool {
+        self.invoices.first(where: { $0.numberPrefix == prefix && $0.numberSuffix == suffix && $0.id != id }) == nil
+    }
 
+    func insert(_ invoice: Invoice) {
         self.invoices.append(invoice)
         Task {
             await repository.insertInvoice(invoice)

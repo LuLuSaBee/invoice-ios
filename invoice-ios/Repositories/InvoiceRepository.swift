@@ -23,6 +23,7 @@ actor SwiftDataInvoiceRepository: InvoiceRepository, Sendable {
         let modelContext = ModelContext(container)
         self.modelExecutor = DefaultSerialModelExecutor(modelContext: modelContext)
         self.modelContainer = container
+        modelContext.autosaveEnabled = true
     }
 
     func fetchInvoices() async throws -> [Invoice] {
