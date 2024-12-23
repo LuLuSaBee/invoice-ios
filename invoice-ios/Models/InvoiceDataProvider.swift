@@ -14,6 +14,7 @@ protocol InvoiceProvider {
     func refresh() async throws
     func validateUniqueInvoiceNumber(_ id: PersistentIdentifier, prefix: String, suffix: String) -> Bool
     func insert(_ invoice: Invoice)
+    func update(_ invoice: Invoice)
     func delete(_ invoice: Invoice)
 }
 
@@ -51,6 +52,11 @@ final class InvoiceDataProvider: InvoiceProvider {
         Task {
             await repository.insertInvoice(invoice)
         }
+    }
+
+    func update(_ invoice: Invoice) {
+        self.invoices.removeAll(where: { $0 == invoice })
+        self.invoices.append(invoice)
     }
 
     func delete(_ invoice: Invoice) {

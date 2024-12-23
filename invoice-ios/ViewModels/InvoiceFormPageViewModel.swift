@@ -179,6 +179,8 @@ class InvoiceFormPageViewModel: InvoiceFormPageViewModelProtocol {
 
         if case .add = mode {
             self.provider.insert(self.invoice)
+        } else {
+            self.provider.update(self.invoice)
         }
 
         onComplete()
