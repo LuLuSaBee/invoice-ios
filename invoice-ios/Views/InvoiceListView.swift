@@ -9,27 +9,38 @@ import Foundation
 import SwiftUI
 import SwiftData
 
-struct InvoiceListView: View {
-    @ObservedObject var viewModel: InvoiceListViewModel
-    var groupingOption: InvoiceGroupingOption
-
+struct InvoiceListView<ViewModel: InvoiceListViewModelProtocol>: View {
+    @ObservedObject var viewModel: ViewModel
     @State private var selectedInvoice: Invoice?
-    @State private var sectionDatas: [SectionData] = []
+
     private var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale.current
         return formatter
     }()
 
-    private struct SectionData {
-        var title: String
-        var amount: Int
-        var invoices: [Invoice]
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
     }
 
-    init(viewModel: InvoiceListViewModel, groupingOption: InvoiceGroupingOption) {
-        self.viewModel = viewModel
-        self.groupingOption = groupingOption
+    @ViewBuilder func checkPrize() -> some View {
+        VStack {
+            HStack {
+                Image(systemName: "calendar.badge.clock")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 24, height: 24)
+                Text("開獎倒數")
+                    .font(.title3.bold())
+                    .padding(.bottom, 4)
+            }
+            .foregroundStyle(Color.accentColor)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .background(Color.generalBackground, in: .rect(cornerRadius: 16))
+        .padding(.top, 8)
     }
 
     @ViewBuilder func sectionHeader(title: String, amount: Int) -> some View {
@@ -53,7 +64,7 @@ struct InvoiceListView: View {
 
     @ViewBuilder func invoiceCell(_ invoice: Invoice) -> some View {
         HStack {
-            if groupingOption == .month {
+            if viewModel.groupOption == .month {
                 VStack(alignment: .center) {
                     Text("\(invoice.day)")
                     Text(formatDate(invoice.date, formatter: "EEE"))
@@ -103,27 +114,11 @@ struct InvoiceListView: View {
 
     var body: some View {
         ScrollView {
-            VStack {
-                HStack {
-                    Image(systemName: "calendar.badge.clock")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 24, height: 24)
-                    Text("開獎倒數")
-                        .font(.title3.bold())
-                        .padding(.bottom, 4)
-                }
-                .foregroundStyle(Color.accentColor)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity, alignment: .topLeading)
-            .background(Color.generalBackground, in: .rect(cornerRadius: 16))
-            .padding(.top, 8)
+            checkPrize()
 
-            ForEach(self.sectionDatas, id: \.title) { section in
+            ForEach(viewModel.displayData, id: \.title) { section in
                 LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
-                    Section(header: sectionHeader(title: section.title, amount: section.amount)) {
+                    Section(header: sectionHeader(title: section.title, amount: section.totalAmount)) {
                         ForEach(section.invoices, content: invoiceCell)
                     }
                 }
@@ -135,37 +130,13 @@ struct InvoiceListView: View {
         }
         .padding(.horizontal, 16)
         .scrollIndicators(.hidden)
-        .onChange(of: viewModel.invoices) { updateData() }
-        .onChange(of: groupingOption) { updateData() }
-        .onAppear(perform: updateData)
         .navigationDestination(item: $selectedInvoice) { invoice in
-            InvoiceFormView(mode: .edit(invoice), service: InvoiceManager.shared)
+            InvoiceFormView(viewModel: viewModel.makeEditInvoiceFormViewModel(invoice: invoice))
         }
     }
 
     private func formatDate(_ date: Date, formatter: String) -> String {
         dateFormatter.dateFormat = formatter
         return dateFormatter.string(from: date)
-    }
-
-    private func updateData() {
-        let sortedInvoices = viewModel.invoices.sorted(by: { $0.date > $1.date })
-        var grouped: [String: [Invoice]]
-        switch groupingOption {
-        case .month:
-            grouped = Dictionary(grouping: sortedInvoices) { invoice in
-                formatDate(invoice.date, formatter: "MMMM")
-            }
-        case .day:
-            grouped = Dictionary(grouping: sortedInvoices) { invoice in
-                "\(String(format: "%02d", invoice.month))/\(String(format: "%02d", invoice.day)) \(formatDate(invoice.date, formatter: "EEE"))"
-            }
-        }
-
-        sectionDatas = grouped.map { (key, invoices) in
-            let totalAmount = invoices.reduce(0) { $0 + $1.amount }
-            return SectionData(title: key, amount: totalAmount, invoices: invoices)
-        }
-        .sorted { $0.title > $1.title }
     }
 }
