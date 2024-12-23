@@ -6,37 +6,49 @@
 //
 
 import SwiftUI
+import Combine
 
-struct MyInvoiceView: View {
-    @State var groupingOption: InvoiceGroupingOption = .month
+struct MyInvoiceView<ViewModel: MyInvoiceViewModelProtocol>: View {
+    @State private var showScanPage: Bool = false
+    @State private var showAddForm: Bool = false
 
-    let invoiceListViewModel = InvoiceListViewModel(period: .init(from: 11, at: 2024), service: InvoiceManager.shared)
+    @ObservedObject var viewModel: ViewModel
 
     var body: some View {
         ZStack {
-            InvoiceListView(viewModel: invoiceListViewModel, groupingOption: groupingOption)
+            PageView(
+                data: viewModel.displayListViewModels,
+                currentID: $viewModel.currentList,
+                pageBuilder: InvoiceListView.init(viewModel:),
+                loadMore: viewModel.loadMore
+            )
 
-            AddInvoiceFloatButton()
+            AddInvoiceFloatButton(showScanPage: $showScanPage, showAddForm: $showAddForm)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(.systemGroupedBackground))
         .navigationTitle("我的發票")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $showAddForm) {
+            InvoiceFormView(viewModel: viewModel.makeAddInvoiceFormViewModel())
+        }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(action: {
                     withAnimation {
-                        groupingOption = groupingOption == .day ? .month : .day
+                        viewModel.tapGroupingOption()
                     }
                 }) {
-                    switch groupingOption {
+                    switch viewModel.groupingOption {
                     case .month:
                         Image(systemName: "rectangle.3.group")
                     case .day:
                         Image(systemName: "rectangle.3.group.fill")
                     }
                 }
+                .foregroundStyle(Color.primary)
             }
+
             ToolbarItem(placement: .topBarTrailing) {
                 Image(systemName: "magnifyingglass")
             }
@@ -45,9 +57,11 @@ struct MyInvoiceView: View {
 }
 
 private struct AddInvoiceFloatButton: View {
+    @Binding var showScanPage: Bool
+    @Binding var showAddForm: Bool
+
     @State private var showAddOption = false
-    @State private var showScanPage: Bool = false
-    @State private var showAddForm: Bool = false
+
 
     var body: some View {
         VStack(alignment: .trailing, spacing: 16) {
@@ -88,9 +102,6 @@ private struct AddInvoiceFloatButton: View {
                     )
                     .onTapGesture(perform: toggleShowAddOption)
             }
-        }
-        .navigationDestination(isPresented: $showAddForm) {
-            InvoiceFormView(mode: .add, service: InvoiceManager.shared)
         }
     }
 
