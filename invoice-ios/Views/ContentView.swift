@@ -10,31 +10,16 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    private var invoiceRepository: InvoiceRepository
+    private var invoiceProvider: InvoiceProvider
 
-    init() {
-        do {
-            let container = try ModelContainer(for: Invoice.self, InvoiceDetail.self)
-            let context = container.mainContext
-            let existingInvoices = try? context.fetch(FetchDescriptor<Invoice>())
-            if existingInvoices?.isEmpty ?? true {
-                Invoice.sampleData.forEach { context.insert($0) }
-                do {
-                    try context.save()
-                } catch {
-                    fatalError("Could not save sample data: \(error)")
-                }
-            }
-            self.invoiceRepository = StandardInvoiceRepository(modelContainer: container)
-        } catch {
-            fatalError("Failed to initialize ModelContainer: \(error)")
-        }
+    init(invoiceProvider: InvoiceProvider) {
+        self.invoiceProvider = invoiceProvider
     }
 
     var body: some View {
         TabView {
             Tab("我的發票", systemImage: "book.pages.fill") {
-                NavigationStack { MyInvoiceView() }
+                NavigationStack { MyInvoiceView(viewModel: MyInvoiceViewModel(provider: invoiceProvider)) }
             }
             Tab("掃描發票", systemImage: "qrcode.viewfinder") { Text("掃描發票") }
             Tab("統計數據", systemImage: "chart.bar.xaxis") { Text("統計數據") }
@@ -43,8 +28,15 @@ struct ContentView: View {
 }
 
 #Preview {
-    let preview = Preview()
-    preview.addExamples(Array(Invoice.sampleData[0...20]))
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let invoiceRepository = SwiftDataInvoiceRepository(config: config)
+    let invoiceProvider = InvoiceDataProvider(repository: invoiceRepository)
 
-    return ContentView().modelContainer(preview.modelContainer)
+    Task {
+        for invoice in Invoice.sampleData[0...20] {
+            await invoiceRepository.insertInvoice(invoice)
+        }
+    }
+
+    return ContentView(invoiceProvider: invoiceProvider)
 }

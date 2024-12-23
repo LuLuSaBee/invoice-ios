@@ -30,7 +30,7 @@ struct invoice_iosApp: App {
             if ProcessInfo.processInfo.environment["XCTestBundlePath"] != nil {
                 Text("Running Test")
             } else {
-                ContentView()
+                ContentView(invoiceProvider: InvoiceDataProvider(repository: SwiftDataInvoiceRepository(config: .init())))
             }
         }
     }
