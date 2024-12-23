@@ -58,10 +58,10 @@ struct PageView<Page: View, T: Identifiable>: UIViewControllerRepresentable {
         }
 
         func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-            print(parent.data.count)
             guard
                 let viewController = viewController as? ModelViewController,
-                let index = parent.data.firstIndex(where: { $0.id == viewController.id })
+                let index = parent.data.firstIndex(where: { $0.id == viewController.id }),
+                index < parent.data.count - 1
             else {
                 return nil
             }
