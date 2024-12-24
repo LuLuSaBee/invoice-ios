@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "A1FD64C0-5E21-4AF3-A530-6DC1174CF010",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:invoice-ios.xcodeproj",
+          "identifier" : "4291D9082D0BBC3500A09ADA",
+          "name" : "invoice-ios"
+        }
+      ]
+    },
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:invoice-ios.xcodeproj",
+      "identifier" : "4291D9082D0BBC3500A09ADA",
+      "name" : "invoice-ios"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:invoice-ios.xcodeproj",
+        "identifier" : "4291D91A2D0BBC3900A09ADA",
+        "name" : "invoice-iosTests"
+      }
+    }
+  ],
+  "version" : 1
+}
