@@ -29,7 +29,6 @@ class InvoiceListViewModel: InvoiceListViewModelProtocol {
 
     typealias FormViewModel = InvoiceFormPageViewModel
 
-    private var navigationPath: NavigationPath
     private var provider: InvoiceProvider
     private var cancellables = Set<AnyCancellable>()
     private var dateFormatter: DateFormatter = {
@@ -38,10 +37,9 @@ class InvoiceListViewModel: InvoiceListViewModelProtocol {
         return formatter
     }()
 
-    init(period: InvoicePeriod, groupBy groupOption: Published<InvoiceGroupingOption>.Publisher, provider: InvoiceProvider, path navigationPath: NavigationPath) {
+    init(period: InvoicePeriod, groupBy groupOption: Published<InvoiceGroupingOption>.Publisher, provider: InvoiceProvider) {
         self.period = period
         self.provider = provider
-        self.navigationPath = navigationPath
 
         groupOption.assign(to: &$groupOption)
 
