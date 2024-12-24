@@ -14,15 +14,15 @@ protocol InvoiceRepository {
     func deleteInvoice(_ invoice: Invoice) async
 }
 
-@ModelActor
-actor SwiftDataInvoiceRepository: InvoiceRepository, Sendable {
+actor SwiftDataInvoiceRepository: InvoiceRepository, Sendable, ModelActor {
+    nonisolated let modelExecutor: any SwiftData.ModelExecutor
+    nonisolated let modelContainer: SwiftData.ModelContainer
     private var context: ModelContext { modelExecutor.modelContext }
 
-    init(config: ModelConfiguration) {
-        let container = try! ModelContainer(for: Invoice.self, InvoiceDetail.self, configurations: config)
-        let modelContext = ModelContext(container)
+    init(modelContainer: SwiftData.ModelContainer) {
+        let modelContext = ModelContext(modelContainer)
         self.modelExecutor = DefaultSerialModelExecutor(modelContext: modelContext)
-        self.modelContainer = container
+        self.modelContainer = modelContainer
         modelContext.autosaveEnabled = true
     }
 

@@ -177,6 +177,8 @@ class InvoiceFormPageViewModel: InvoiceFormPageViewModelProtocol {
         self.invoice.month = Calendar.current.component(.month, from: self.dateField.value)
         self.invoice.day = Calendar.current.component(.day, from: self.dateField.value)
 
+        self.invoice.details = self.details.filter { !$0.name.isEmpty }
+
         if case .add = mode {
             self.provider.insert(self.invoice)
         } else {

@@ -13,20 +13,22 @@ protocol PrizeDrawRecordRepository {
     func insertRecord(_ record: PrizeDrawRecord) async
 }
 
-@ModelActor
-actor SwiftDataPrizeDrawRecordRepository: PrizeDrawRecordRepository {
+actor SwiftDataPrizeDrawRecordRepository: PrizeDrawRecordRepository, Sendable, ModelActor {
+    nonisolated let modelExecutor: any SwiftData.ModelExecutor
+    nonisolated let modelContainer: SwiftData.ModelContainer
     private var context: ModelContext { modelExecutor.modelContext }
 
-    init(config: ModelConfiguration) {
-        let container = try! ModelContainer(for: PrizeDrawRecord.self, configurations: config)
-        let modelContext = ModelContext(container)
+    init(modelContainer: SwiftData.ModelContainer) {
+        let modelContext = ModelContext(modelContainer)
         self.modelExecutor = DefaultSerialModelExecutor(modelContext: modelContext)
-        self.modelContainer = container
+        self.modelContainer = modelContainer
         modelContext.autosaveEnabled = true
     }
 
     func fetchAllRecords() async throws -> [PrizeDrawRecord] {
-        return try context.fetch(.init())
+        let fetchDescriptor = FetchDescriptor<PrizeDrawRecord>()
+
+        return try context.fetch(fetchDescriptor)
     }
 
     func insertRecord(_ record: PrizeDrawRecord) async {
