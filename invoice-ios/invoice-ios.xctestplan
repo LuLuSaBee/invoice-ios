@@ -17,6 +17,7 @@
   },
   "testTargets" : [
     {
+      "parallelizable" : true,
       "target" : {
         "containerPath" : "container:invoice-ios.xcodeproj",
         "identifier" : "4291D91A2D0BBC3900A09ADA",
