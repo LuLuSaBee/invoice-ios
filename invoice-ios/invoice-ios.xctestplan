@@ -9,15 +9,6 @@
     }
   ],
   "defaultOptions" : {
-    "codeCoverage" : {
-      "targets" : [
-        {
-          "containerPath" : "container:invoice-ios.xcodeproj",
-          "identifier" : "4291D9082D0BBC3500A09ADA",
-          "name" : "invoice-ios"
-        }
-      ]
-    },
     "targetForVariableExpansion" : {
       "containerPath" : "container:invoice-ios.xcodeproj",
       "identifier" : "4291D9082D0BBC3500A09ADA",
