@@ -11,7 +11,6 @@ import SwiftData
 protocol InvoiceProvider {
     var invoicesPublisher: AnyPublisher<[Invoice], Never> { get }
 
-    func refresh() async throws
     func validateUniqueInvoiceNumber(_ id: PersistentIdentifier, prefix: String, suffix: String) -> Bool
     func insert(_ invoice: Invoice)
     func update(_ invoice: Invoice)
@@ -39,7 +38,7 @@ final class InvoiceDataProvider: InvoiceProvider {
         }
     }
 
-    func refresh() async throws {
+    private func refresh() async throws {
         self.invoices = try await repository.fetchInvoices()
     }
 

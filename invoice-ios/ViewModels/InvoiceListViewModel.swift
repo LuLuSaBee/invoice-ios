@@ -17,7 +17,6 @@ protocol InvoiceListViewModelProtocol: ObservableObject, Identifiable {
     var period: InvoicePeriod { get }
 
     func makeEditInvoiceFormPageViewModel(invoice: Invoice) -> FormViewModel
-    func refresh() async
 }
 
 class InvoiceListViewModel: InvoiceListViewModelProtocol {
@@ -86,13 +85,5 @@ class InvoiceListViewModel: InvoiceListViewModelProtocol {
 
     func makeEditInvoiceFormPageViewModel(invoice: Invoice) -> FormViewModel {
         InvoiceFormPageViewModel(mode: .edit(invoice), provider: self.provider)
-    }
-
-    func refresh() async {
-        do {
-            try await self.provider.refresh()
-        } catch {
-            print("Error refreshing invoices: \(error)")
-        }
     }
 }
