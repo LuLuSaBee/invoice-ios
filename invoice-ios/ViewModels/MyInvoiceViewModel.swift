@@ -13,7 +13,6 @@ protocol MyInvoiceViewModelProtocol: ObservableObject {
     associatedtype ListViewModel: InvoiceListViewModelProtocol
     associatedtype FormViewModel: InvoiceFormPageViewModelProtocol
 
-    var navigationPath: NavigationPath { get set }
     var groupingOption: InvoiceGroupingOption { get }
     var displayListViewModels: [ListViewModel] { get set }
     var currentList: ListViewModel.ID? { get set }
@@ -24,7 +23,6 @@ protocol MyInvoiceViewModelProtocol: ObservableObject {
 }
 
 class MyInvoiceViewModel: MyInvoiceViewModelProtocol {
-    @Published var navigationPath: NavigationPath = .init()
     @Published var groupingOption: InvoiceGroupingOption = .month
     @Published var displayListViewModels: [InvoiceListViewModel] = []
     @Published var currentList: InvoiceListViewModel.ID? = nil
@@ -46,9 +44,9 @@ class MyInvoiceViewModel: MyInvoiceViewModelProtocol {
         let earlier = InvoicePeriodProvider.previous(by: previous)
 
         self.displayListViewModels.append(contentsOf: [
-            .init(period: start, groupBy: $groupingOption, provider: provider, path: navigationPath),
-            .init(period: previous, groupBy: $groupingOption, provider: provider, path: navigationPath),
-            .init(period: earlier, groupBy: $groupingOption, provider: provider, path: navigationPath),
+            .init(period: start, groupBy: $groupingOption, provider: provider),
+            .init(period: previous, groupBy: $groupingOption, provider: provider),
+            .init(period: earlier, groupBy: $groupingOption, provider: provider),
         ])
     }
 
