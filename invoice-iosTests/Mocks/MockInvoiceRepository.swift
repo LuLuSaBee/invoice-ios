@@ -8,7 +8,11 @@
 @testable import invoice_ios
 
 class MockInvoiceRepository: InvoiceRepository {
-    private var invoices: [Invoice] = []
+    private var invoices: [Invoice]
+
+    init(initialData invoices: [Invoice] = []) {
+        self.invoices = invoices
+    }
 
     func fetchInvoices() async throws -> [Invoice] {
         invoices
