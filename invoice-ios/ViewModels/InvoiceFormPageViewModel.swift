@@ -21,12 +21,11 @@ protocol InvoiceFormPageViewModelProtocol: ObservableObject {
     var showDeleteOption: Bool { get }
     var showAddAnotherOption: Bool { get }
     var pageTitle: String { get }
-    var showDuplicateError: Bool { get set }
 
     func addDetail() -> InvoiceDetail
     func deleteDetail(at detail: InvoiceDetail) -> Void
-    func delete(onComplete: @escaping () -> Void) -> Void
-    func save(onComplete: @escaping () -> Void) -> Void
+    func delete() async -> Void
+    func save() async -> Bool
 }
 
 class InvoiceFormPageViewModel: InvoiceFormPageViewModelProtocol {
@@ -37,7 +36,6 @@ class InvoiceFormPageViewModel: InvoiceFormPageViewModelProtocol {
     @Published var amountField: TextFieldViewModel<Int>
     @Published var details: [InvoiceDetail] = []
     @Published var isValid: Bool = false
-    @Published var showDuplicateError: Bool = false
 
     var showDeleteOption: Bool
     var showAddAnotherOption: Bool
@@ -156,17 +154,15 @@ class InvoiceFormPageViewModel: InvoiceFormPageViewModelProtocol {
         self.details.removeAll { $0.id == detail.id }
     }
 
-    func delete(onComplete: @escaping () -> Void) -> Void {
-        self.provider.delete(invoice)
-        onComplete()
+    func delete() async -> Void {
+        await self.provider.delete(invoice)
     }
 
-    func save(onComplete: @escaping () -> Void) -> Void {
+    func save() async -> Bool {
         let numberPrefix = self.numberPrefixField.value
         let numberSuffix = self.numberSuffixField.value
         guard self.provider.validateUniqueInvoiceNumber(self.invoice.id, prefix: numberPrefix, suffix: numberSuffix) else {
-            self.showDuplicateError = true
-            return
+            return false
         }
 
         self.invoice.shopName = self.shopNameField.value
@@ -180,12 +176,12 @@ class InvoiceFormPageViewModel: InvoiceFormPageViewModelProtocol {
         self.invoice.details = self.details.filter { !$0.name.isEmpty }
 
         if case .add = mode {
-            self.provider.insert(self.invoice)
+            await self.provider.delete(invoice)
         } else {
             self.provider.update(self.invoice)
         }
 
-        onComplete()
+        return true
     }
 
     func reset() {

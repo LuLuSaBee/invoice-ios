@@ -32,6 +32,7 @@ struct MyInvoiceView<ViewModel: MyInvoiceViewModelProtocol>: View {
         .navigationDestination(isPresented: $showAddForm) {
             InvoiceFormPageView(viewModel: viewModel.makeAddInvoiceFormPageViewModel())
         }
+        .toolbarVisibility(.visible, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button(action: {

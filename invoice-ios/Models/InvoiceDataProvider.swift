@@ -5,6 +5,7 @@
 //  Created by 劉聖龍 on 2024/12/22.
 //
 
+import Foundation
 import Combine
 import SwiftData
 
@@ -12,14 +13,14 @@ protocol InvoiceProvider {
     var invoicesPublisher: AnyPublisher<[Invoice], Never> { get }
 
     func validateUniqueInvoiceNumber(_ id: PersistentIdentifier, prefix: String, suffix: String) -> Bool
-    func insert(_ invoice: Invoice)
     func update(_ invoice: Invoice)
-    func delete(_ invoice: Invoice)
+    func insert(_ invoice: Invoice) async
+    func delete(_ invoice: Invoice) async
 }
 
 final class InvoiceDataProvider: InvoiceProvider {
     var invoicesPublisher: AnyPublisher<[Invoice], Never> {
-        $invoices.eraseToAnyPublisher()
+        $invoices.receive(on: DispatchQueue.main).eraseToAnyPublisher()
     }
 
     @Published private var invoices: [Invoice] = []
@@ -46,22 +47,18 @@ final class InvoiceDataProvider: InvoiceProvider {
         self.invoices.first(where: { $0.numberPrefix == prefix && $0.numberSuffix == suffix && $0.id != id }) == nil
     }
 
-    func insert(_ invoice: Invoice) {
-        self.invoices.append(invoice)
-        Task {
-            await repository.insertInvoice(invoice)
-        }
-    }
-
     func update(_ invoice: Invoice) {
         self.invoices.removeAll(where: { $0 == invoice })
         self.invoices.append(invoice)
     }
 
-    func delete(_ invoice: Invoice) {
+    func insert(_ invoice: Invoice) async {
+        self.invoices.append(invoice)
+        await repository.insertInvoice(invoice)
+    }
+
+    func delete(_ invoice: Invoice) async {
         self.invoices.removeAll(where: { $0 == invoice })
-        Task {
-            await repository.deleteInvoice(invoice)
-        }
+        await repository.deleteInvoice(invoice)
     }
 }

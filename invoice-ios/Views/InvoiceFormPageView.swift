@@ -14,10 +14,20 @@ struct InvoiceFormPageView<ViewModel: InvoiceFormPageViewModelProtocol>: View {
     @StateObject private var keyboardMonitor = KeyboardMonitor()
     @ObservedObject private var viewModel: ViewModel
 
+    @State private var showDuplicateError = false
     @State private var showDeleteDialog = false
+    @State private var isLoading = false
 
     private var buttonColor: Color {
         viewModel.isValid ? .accentColor : Color(.systemGray)
+    }
+
+    @ViewBuilder private var loadingIndicator: some View {
+        ProgressView()
+            .progressViewStyle(.circular)
+            .controlSize(.extraLarge)
+            .tint(Color.white)
+            .padding(16)
     }
 
     init(viewModel: ViewModel) {
@@ -29,25 +39,20 @@ struct InvoiceFormPageView<ViewModel: InvoiceFormPageViewModelProtocol>: View {
             FormView(viewModel: viewModel)
         }
         .background(Color.generalBackground)
-        .navigationTitle(viewModel.pageTitle)
         .toolbarRole(.editor)
-        .toolbarVisibility(.hidden, for: .tabBar)
-        .toolbar {
-            if viewModel.showDeleteOption {
-                ToolbarItem(placement: .navigation) {
-                    Button("刪除") {
-                        showDeleteDialog = true
-                    }
-                }
-            }
-        }
+        .toolbarVisibility(.hidden, for: .tabBar, .navigationBar)
         .alert("確認刪除?", isPresented: $showDeleteDialog) {
             Button("確認") {
-                viewModel.delete { dismiss() }
+                isLoading = true
+                Task {
+                    await viewModel.delete()
+                    dismiss()
+                    isLoading = false
+                }
             }
             Button("取消", role: .cancel) {}
         }
-        .alert("發票號碼重複", isPresented: $viewModel.showDuplicateError) {
+        .alert("發票號碼重複", isPresented: $showDuplicateError) {
             Button("重新填寫") {}
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -66,11 +71,11 @@ struct InvoiceFormPageView<ViewModel: InvoiceFormPageViewModelProtocol>: View {
                         .background(buttonColor, in: RoundedRectangle(cornerRadius: 8))
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            viewModel.save { dismiss() }
+                            self.handleSave {
+                                self.dismiss()
+                            }
                         }
                         .padding(.horizontal, 16)
-                        .disabled(!viewModel.isValid)
-
                     if viewModel.showAddAnotherOption {
                         Text("儲存並新增下一筆")
                             .font(.body)
@@ -79,17 +84,68 @@ struct InvoiceFormPageView<ViewModel: InvoiceFormPageViewModelProtocol>: View {
                             .padding(.vertical, 8)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                viewModel.save { dismiss() }
-                                // TODO: Reset form data
+                                self.handleSave {
+                                    // TODO: Reset form data
+                                }
                             }
                             .padding(.horizontal, 16)
-                            .disabled(!viewModel.isValid)
                     }
                 }
                 .frame(maxWidth: .infinity)
                 .ignoresSafeArea(.keyboard, edges: .bottom)
                 .background(Color.generalBackground)
+                .disabled(!viewModel.isValid)
             }
+        }
+        .safeAreaInset(edge: .top) {
+            VStack {
+                HStack {
+                    Image(systemName: "chevron.left")
+                        .foregroundStyle(.primary)
+                        .frame(width: 24)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            self.dismiss()
+                        }
+                    Spacer()
+                    Text(viewModel.pageTitle)
+                    Spacer()
+                    if viewModel.showDeleteOption {
+                        Button("刪除") {
+                            showDeleteDialog = true
+                        }
+                        .foregroundStyle(Color(.systemRed))
+                    }
+                }
+                .padding(.horizontal, 16)
+
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(.gray)
+                    .opacity(0.3)
+            }
+        }
+        .overlay {
+            ZStack {
+                Color.black.opacity(0.5).frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .ignoresSafeArea(.all)
+                loadingIndicator
+            }
+            .ignoresSafeArea(.all, edges: .all)
+            .opacity(self.isLoading ? 1 : 0)
+            .animation(.default, value: self.isLoading)
+        }
+    }
+
+    func handleSave(onComplete: @escaping () -> Void) {
+        self.isLoading = true
+        Task {
+            if await viewModel.save() {
+                onComplete()
+            } else {
+                self.showDuplicateError = true
+            }
+            self.isLoading = false
         }
     }
 }
