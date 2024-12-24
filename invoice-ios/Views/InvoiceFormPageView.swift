@@ -102,7 +102,7 @@ struct InvoiceFormPageView<ViewModel: InvoiceFormPageViewModelProtocol>: View {
                 HStack {
                     Image(systemName: "chevron.left")
                         .foregroundStyle(.primary)
-                        .frame(width: 24)
+                        .frame(width: 36, alignment: .leading)
                         .contentShape(Rectangle())
                         .onTapGesture {
                             self.dismiss()
@@ -115,6 +115,9 @@ struct InvoiceFormPageView<ViewModel: InvoiceFormPageViewModelProtocol>: View {
                             showDeleteDialog = true
                         }
                         .foregroundStyle(Color(.systemRed))
+                        .frame(width: 36, alignment: .trailing)
+                    } else {
+                        Rectangle().fill(.clear).frame(width: 36, height: 1)
                     }
                 }
                 .padding(.horizontal, 16)
@@ -217,7 +220,7 @@ private struct FormView<ViewModel: InvoiceFormPageViewModelProtocol>: View {
                 HStack {
                     Text("消費明細")
                     Spacer()
-                    Button("新增明細") {
+                    Button("新增") {
                         let detail = viewModel.addDetail()
                         focusedField = .detail(id: detail.id)
                     }
