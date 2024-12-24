@@ -8,7 +8,7 @@
 @testable import invoice_ios
 
 class MockInvoiceRepository: InvoiceRepository {
-    private var invoices: [Invoice]
+    var invoices: [Invoice]
 
     init(initialData invoices: [Invoice] = []) {
         self.invoices = invoices
