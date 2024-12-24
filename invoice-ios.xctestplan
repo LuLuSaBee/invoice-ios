@@ -1,7 +1,7 @@
 {
   "configurations" : [
     {
-      "id" : "A1FD64C0-5E21-4AF3-A530-6DC1174CF010",
+      "id" : "990934F0-601E-4997-804A-D594C0BA9342",
       "name" : "Test Scheme Action",
       "options" : {
 
@@ -9,6 +9,7 @@
     }
   ],
   "defaultOptions" : {
+    "repeatInNewRunnerProcess" : true,
     "targetForVariableExpansion" : {
       "containerPath" : "container:invoice-ios.xcodeproj",
       "identifier" : "4291D9082D0BBC3500A09ADA",
