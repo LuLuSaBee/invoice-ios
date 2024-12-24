@@ -39,7 +39,7 @@ final class InvoiceDataProvider: InvoiceProvider {
         }
     }
 
-    private func refresh() async throws {
+    func refresh() async throws {
         self.invoices = try await repository.fetchInvoices()
     }
 
