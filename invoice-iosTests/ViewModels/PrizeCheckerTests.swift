@@ -8,6 +8,7 @@
 @testable import invoice_ios
 import Testing
 
+@Suite("Prize Checker")
 struct PrizeCheckerTests {
     private var prizeChecker = PrizeChecker()
     private var prizeRecord = PrizeDrawRecord(period: .init(from: 11, at: 2024), specialNumber: "12345678", grandNumber: "87654321", firstNumbers: ["11111222", "22222222"])
