@@ -43,6 +43,7 @@ class InvoiceListViewModel: InvoiceListViewModelProtocol {
         groupOption.assign(to: &$groupOption)
 
         provider.invoicesPublisher
+            .receive(on: DispatchQueue.main)
             .map { invoices in
                 invoices.filter { invoice in
                     invoice.year == period.year &&

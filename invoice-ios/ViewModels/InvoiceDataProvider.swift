@@ -20,7 +20,7 @@ protocol InvoiceProvider {
 
 final class InvoiceDataProvider: InvoiceProvider {
     var invoicesPublisher: AnyPublisher<[Invoice], Never> {
-        $invoices.receive(on: DispatchQueue.main).eraseToAnyPublisher()
+        $invoices.eraseToAnyPublisher()
     }
 
     @Published private var invoices: [Invoice] = []
