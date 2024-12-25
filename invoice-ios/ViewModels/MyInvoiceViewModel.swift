@@ -31,11 +31,12 @@ class MyInvoiceViewModel: MyInvoiceViewModelProtocol {
     typealias FormViewModel = InvoiceFormPageViewModel
 
     private let provider: InvoiceProvider
-    private let periodProvider = InvoicePeriodProvider()
+    private let periodProvider: InvoicePeriodProvider
     private var cancellables = Set<AnyCancellable>()
 
-    init(provider: InvoiceProvider) {
+    init(provider: InvoiceProvider, periodProvider: InvoicePeriodProvider = .init()) {
         self.provider = provider
+        self.periodProvider = periodProvider
         self.expandDisplayLists(from: periodProvider.current())
         self.currentList = displayListViewModels.first!.id
     }
