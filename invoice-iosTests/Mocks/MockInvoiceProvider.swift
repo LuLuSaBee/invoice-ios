@@ -18,7 +18,7 @@ class MockInvoiceProvider: InvoiceProvider {
     @Published var invoices: [Invoice] = []
 
     init(initiaData: [Invoice] = []) {
-        self.invoices = invoices
+        self.invoices = initiaData
     }
 
     func validateUniqueInvoiceNumber(_ id: PersistentIdentifier, prefix: String, suffix: String) -> Bool {
