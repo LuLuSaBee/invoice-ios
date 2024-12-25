@@ -25,31 +25,21 @@ class MyInvoiceViewModelTests {
     ))
     func tapGroupingOption(old: InvoiceGroupingOption, new: InvoiceGroupingOption) async {
         viewModel.groupingOption = old
+        var optionPublisher = viewModel.$groupingOption.values.makeAsyncIterator()
 
-        let newOption = await withCheckedContinuation { continuation in
-            viewModel.$groupingOption
-                .dropFirst()
-                .sink { continuation.resume(returning: $0) }
-                .store(in: &cancellables)
-
-            viewModel.tapGroupingOption()
-        }
+        viewModel.tapGroupingOption()
+        let newOption = await optionPublisher.next()
 
         #expect(newOption == new)
     }
 
     @Test("Load More List View Model")
-    func loadMore() async {
+    func loadMore() async throws {
         let count = viewModel.displayListViewModels.count
+        var displayPublisher = viewModel.$displayListViewModels.values.makeAsyncIterator()
 
-        let newCount = await withCheckedContinuation { continuation in
-            viewModel.$displayListViewModels
-                .dropFirst()
-                .sink { continuation.resume(returning: $0.count) }
-                .store(in: &cancellables)
-
-            viewModel.loadMore()
-        }
+        viewModel.loadMore()
+        let newCount = try #require(await displayPublisher.next()?.count)
 
         #expect(newCount > count)
     }
