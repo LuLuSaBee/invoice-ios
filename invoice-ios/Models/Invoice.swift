@@ -62,7 +62,7 @@ class InvoiceDetail {
 
     var name: String
 
-    @Relationship(inverse: \Invoice.details) var invoice: Invoice
+    @Relationship(inverse: \Invoice.details) var invoice: Invoice?
 
     init(name: String, invoice: Invoice) {
         self.name = name
