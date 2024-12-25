@@ -9,7 +9,7 @@
 import Testing
 import Combine
 
-@Suite("Invoice Data Provider", .serialized)
+@Suite("Invoice Data Provider")
 class InvoiceDataProviderTests {
     private let provider: InvoiceDataProvider
     private let mockRepository: MockInvoiceRepository
@@ -26,12 +26,16 @@ class InvoiceDataProviderTests {
         let mockDatas = MockInvoiceDataGenerator.get(length: 5)
         mockRepository.invoices = mockDatas
 
-        try await provider.refresh()
-
-        let invoices = await withCheckedContinuation { continuation in
+        let invoices = try await withCheckedThrowingContinuation { continuation in
             provider.invoicesPublisher
+                .removeDuplicates()
+                .dropFirst()
                 .sink { continuation.resume(returning: $0) }
                 .store(in: &cancellables)
+
+            Task {
+                try await provider.refresh()
+            }
         }
 
         #expect(invoices == mockDatas)
@@ -41,13 +45,16 @@ class InvoiceDataProviderTests {
     func insertInvoice() async {
         let mockData = MockInvoiceDataGenerator.get()
 
-        await provider.insert(mockData)
-
         let invoices = await withCheckedContinuation { continuation in
             provider.invoicesPublisher
-                .first()
+                .removeDuplicates()
+                .dropFirst()
                 .sink { continuation.resume(returning: $0) }
                 .store(in: &cancellables)
+
+            Task {
+                await provider.insert(mockData)
+            }
         }
 
         #expect(invoices.first == mockData)
@@ -57,14 +64,16 @@ class InvoiceDataProviderTests {
     func updateInvoice() async {
         let mockData = MockInvoiceDataGenerator.get()
         await provider.insert(mockData)
-        mockData.numberPrefix = "UI"
-        provider.update(mockData)
 
         let invoices = await withCheckedContinuation { continuation in
             provider.invoicesPublisher
-                .first()
+                .dropFirst()
+                .removeDuplicates()
                 .sink { continuation.resume(returning: $0) }
                 .store(in: &cancellables)
+
+            mockData.numberPrefix = "UI"
+            provider.update(mockData)
         }
 
         #expect(invoices.first?.numberString == mockData.numberString)
@@ -77,19 +86,20 @@ class InvoiceDataProviderTests {
         await provider.insert(mockData1)
         await provider.insert(mockData2)
 
-        await provider.delete(mockData1)
-
         let invoices = await withCheckedContinuation { continuation in
             provider.invoicesPublisher
-                .first()
+                .removeDuplicates()
+                .dropFirst()
                 .sink { continuation.resume(returning: $0) }
                 .store(in: &cancellables)
+
+            Task {
+                await provider.delete(mockData1)
+            }
         }
 
-        #expect(
-            !invoices.contains(where: { $0.id == mockData1.id }) &&
-            invoices.contains(where: { $0.id == mockData2.id })
-        )
+        #expect(!invoices.contains(where: { $0.id == mockData1.id }))
+        #expect(invoices.contains(where: { $0.id == mockData2.id }))
     }
 
     @Test("Check Unique Number")

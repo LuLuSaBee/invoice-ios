@@ -48,8 +48,11 @@ final class InvoiceDataProvider: InvoiceProvider {
     }
 
     func update(_ invoice: Invoice) {
-        self.invoices.removeAll(where: { $0 == invoice })
-        self.invoices.append(invoice)
+        if let index = invoices.firstIndex(where: { $0 == invoice }) {
+            invoices[index] = invoice
+        } else {
+            invoices.append(invoice)
+        }
     }
 
     func insert(_ invoice: Invoice) async {
