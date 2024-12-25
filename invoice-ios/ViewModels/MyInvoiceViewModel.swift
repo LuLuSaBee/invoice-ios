@@ -41,8 +41,8 @@ class MyInvoiceViewModel: MyInvoiceViewModelProtocol {
     }
 
     private func expandDisplayLists(from start: InvoicePeriod) {
-        let previous = periodProvider.previous(by: start)
-        let earlier = periodProvider.previous(by: previous)
+        let previous = periodProvider.previous(from: start)
+        let earlier = periodProvider.previous(from: previous)
 
         self.displayListViewModels.append(contentsOf: [
             .init(period: start, groupBy: $groupingOption, provider: provider),
@@ -53,7 +53,7 @@ class MyInvoiceViewModel: MyInvoiceViewModelProtocol {
 
     func loadMore() {
         guard let current = displayListViewModels.last?.period else { return }
-        let start = periodProvider.previous(by: current)
+        let start = periodProvider.previous(from: current)
         self.expandDisplayLists(from: start)
     }
 

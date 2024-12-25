@@ -8,15 +8,14 @@
 import Foundation
 
 struct InvoicePeriodProvider {
-    func current() -> InvoicePeriod {
-        let now = Date.now
-        let year = Calendar.current.component(.year, from: now)
-        let currentMonth = Calendar.current.component(.month, from: now)
+    func current(at date: Date = .now) -> InvoicePeriod {
+        let year = Calendar.current.component(.year, from: date)
+        let currentMonth = Calendar.current.component(.month, from: date)
         let startMonth = currentMonth % 2 == 0 ? currentMonth - 1 : currentMonth
         return InvoicePeriod(from: startMonth, at: year)
     }
 
-    func previous(by period: InvoicePeriod) -> InvoicePeriod {
+    func previous(from period: InvoicePeriod) -> InvoicePeriod {
         if period.firstMonth == 1 {
             return InvoicePeriod(from: 11, at: period.year - 1)
         } else {
@@ -24,7 +23,7 @@ struct InvoicePeriodProvider {
         }
     }
 
-    func next(by period: InvoicePeriod) -> InvoicePeriod {
+    func next(from period: InvoicePeriod) -> InvoicePeriod {
         if period.firstMonth == 11 {
             return InvoicePeriod(from: 1, at: period.year + 1)
         } else {
