@@ -176,7 +176,7 @@ class InvoiceFormPageViewModel: InvoiceFormPageViewModelProtocol {
         self.invoice.details = self.details.filter { !$0.name.isEmpty }
 
         if case .add = mode {
-            await self.provider.delete(invoice)
+            await self.provider.insert(invoice)
         } else {
             self.provider.update(self.invoice)
         }
