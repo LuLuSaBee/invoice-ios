@@ -8,7 +8,7 @@
 import Foundation
 
 struct InvoicePeriodProvider {
-    static func current() -> InvoicePeriod {
+    func current() -> InvoicePeriod {
         let now = Date.now
         let year = Calendar.current.component(.year, from: now)
         let currentMonth = Calendar.current.component(.month, from: now)
@@ -16,7 +16,7 @@ struct InvoicePeriodProvider {
         return InvoicePeriod(from: startMonth, at: year)
     }
 
-    static func previous(by period: InvoicePeriod) -> InvoicePeriod {
+    func previous(by period: InvoicePeriod) -> InvoicePeriod {
         if period.firstMonth == 1 {
             return InvoicePeriod(from: 11, at: period.year - 1)
         } else {
@@ -24,7 +24,7 @@ struct InvoicePeriodProvider {
         }
     }
 
-    static func next(by period: InvoicePeriod) -> InvoicePeriod {
+    func next(by period: InvoicePeriod) -> InvoicePeriod {
         if period.firstMonth == 11 {
             return InvoicePeriod(from: 1, at: period.year + 1)
         } else {

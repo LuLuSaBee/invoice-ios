@@ -31,17 +31,18 @@ class MyInvoiceViewModel: MyInvoiceViewModelProtocol {
     typealias FormViewModel = InvoiceFormPageViewModel
 
     private let provider: InvoiceProvider
+    private let periodProvider = InvoicePeriodProvider()
     private var cancellables = Set<AnyCancellable>()
 
     init(provider: InvoiceProvider) {
         self.provider = provider
-        self.expandDisplayLists(from: InvoicePeriodProvider.current())
+        self.expandDisplayLists(from: periodProvider.current())
         self.currentList = displayListViewModels.first!.id
     }
 
     private func expandDisplayLists(from start: InvoicePeriod) {
-        let previous = InvoicePeriodProvider.previous(by: start)
-        let earlier = InvoicePeriodProvider.previous(by: previous)
+        let previous = periodProvider.previous(by: start)
+        let earlier = periodProvider.previous(by: previous)
 
         self.displayListViewModels.append(contentsOf: [
             .init(period: start, groupBy: $groupingOption, provider: provider),
@@ -52,7 +53,7 @@ class MyInvoiceViewModel: MyInvoiceViewModelProtocol {
 
     func loadMore() {
         guard let current = displayListViewModels.last?.period else { return }
-        let start = InvoicePeriodProvider.previous(by: current)
+        let start = periodProvider.previous(by: current)
         self.expandDisplayLists(from: start)
     }
 
