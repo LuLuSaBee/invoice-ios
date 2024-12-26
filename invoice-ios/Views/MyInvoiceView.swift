@@ -91,6 +91,7 @@ private struct AddInvoiceFloatButton: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
         .padding(.bottom, 16)
         .padding(.trailing, 16)
+        .ignoresSafeArea(.keyboard)
         .background {
             if showAddOption {
                 Rectangle()
