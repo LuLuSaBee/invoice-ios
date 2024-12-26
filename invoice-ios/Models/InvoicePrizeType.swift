@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum InvoicePrizeType {
+enum InvoicePrizeType: Comparable {
     case special
     case grand
     case first

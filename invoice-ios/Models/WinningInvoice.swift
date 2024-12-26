@@ -8,6 +8,6 @@
 import Foundation
 
 struct WinningInvoice {
-    let prize: InvoicePrizeType
+    let prizeType: InvoicePrizeType
     let invoice: Invoice
 }

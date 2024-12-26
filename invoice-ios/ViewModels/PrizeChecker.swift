@@ -15,7 +15,7 @@ struct PrizeChecker: PrizeCheckerProtocol {
     func findWinningInvoices(invoices: [Invoice], prizeRecord: PrizeDrawRecord) -> [WinningInvoice] {
         invoices.reduce(into: []) { result, invoice in
             if let prizeType = getPrizeType(invoice.numberSuffix, prizeRecord) {
-                result.append(WinningInvoice(prize: prizeType, invoice: invoice))
+                result.append(WinningInvoice(prizeType: prizeType, invoice: invoice))
             }
         }
     }
