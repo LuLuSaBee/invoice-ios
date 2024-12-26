@@ -15,7 +15,6 @@ struct ContentView: View {
 
     init(modelConfig: ModelConfiguration) {
         let modelContainer = try! ModelContainer(for: Invoice.self, InvoiceDetail.self, PrizeDrawRecord.self, configurations: modelConfig)
-        modelContainer.mainContext.autosaveEnabled = true
 
         let invoiceRepository = SwiftDataInvoiceRepository(modelContainer: modelContainer)
         let prizeRecordRepository = SwiftDataPrizeDrawRecordRepository(modelContainer: modelContainer)
@@ -31,8 +30,12 @@ struct ContentView: View {
                     MyInvoiceView(viewModel: MyInvoiceViewModel(provider: invoiceProvider))
                 }
             }
-            Tab("掃描發票", systemImage: "qrcode.viewfinder") { Text("掃描發票") }
-            Tab("統計數據", systemImage: "chart.bar.xaxis") { Text("統計數據") }
+//            Tab("掃描發票", systemImage: "qrcode.viewfinder") { Text("掃描發票") }
+            Tab("統計數據", systemImage: "chart.bar.xaxis") {
+                NavigationStack {
+                    AnalyticsDashboardView(viewModel: AnalyticsDashboardViewModel(invoiceProvider: invoiceProvider))
+                }
+            }
         }
     }
 }
