@@ -410,6 +410,15 @@ extension Invoice {
         .init(shopName: "Netflix", numberPrefix: "SE", numberSuffix: "13096428", amount: 390, year: 2024, month: 12, day: 20),
         .init(shopName: "誠品書店", numberPrefix: "DZ", numberSuffix: "70918254", amount: 695, year: 2024, month: 12, day: 20),
         .init(shopName: "Apple", numberPrefix: "OW", numberSuffix: "28041953", amount: 999, year: 2024, month: 12, day: 20),
+        .init(shopName: "金庸小吃店", numberPrefix: "EC", numberSuffix: "12357435", amount: 120, year: 2024, month: 12, day: 21),
+        .init(shopName: "7-Eleven", numberPrefix: "QG", numberSuffix: "07419538", amount: 95, year: 2024, month: 12, day: 21),
+        .init(shopName: "iCloud", numberPrefix: "PB", numberSuffix: "32247608", amount: 35, year: 2024, month: 12, day: 22),
+        .init(shopName: "台灣大車隊", numberPrefix: "ZH", numberSuffix: "69120957", amount: 200, year: 2024, month: 12, day: 23),
+        .init(shopName: "星巴克", numberPrefix: "MU", numberSuffix: "40382610", amount: 180, year: 2024, month: 12, day: 23),
+        .init(shopName: "Netflix", numberPrefix: "SE", numberSuffix: "23096428", amount: 390, year: 2024, month: 12, day: 25),
+        .init(shopName: "誠品書店", numberPrefix: "DZ", numberSuffix: "71918254", amount: 695, year: 2024, month: 12, day: 25),
+        .init(shopName: "Apple", numberPrefix: "OW", numberSuffix: "29041953", amount: 999, year: 2024, month: 12, day: 26),
+        .init(shopName: "Netflix", numberPrefix: "SE", numberSuffix: "12096428", amount: 390, year: 2024, month: 12, day: 27),
     ]
 
 }
