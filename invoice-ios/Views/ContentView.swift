@@ -27,7 +27,7 @@ struct ContentView: View {
         TabView {
             Tab("我的發票", systemImage: "book.pages.fill") {
                 NavigationStack {
-                    MyInvoiceView(viewModel: MyInvoiceViewModel(provider: invoiceProvider))
+                    MyInvoiceView(viewModel: MyInvoiceViewModel(provider: invoiceProvider, prizeProvider: prizeRecordProvider))
                 }
             }
 //            Tab("掃描發票", systemImage: "qrcode.viewfinder") { Text("掃描發票") }

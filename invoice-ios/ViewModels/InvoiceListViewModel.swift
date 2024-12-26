@@ -14,21 +14,30 @@ protocol InvoiceListViewModelProtocol: ObservableObject, Identifiable {
 
     var groupOption: InvoiceGroupingOption { get }
     var displayData: [InvoiceSectionData] { get }
+    var winningInvoices: [WinningInvoice]? { get }
     var period: InvoicePeriod { get }
+    var dayToDraw: Int { get }
+    var totalInvoiceCount: Int { get }
 
+    func drawPrizeNumber(special: String, grand: String, firsts: [String])
     func makeEditInvoiceFormPageViewModel(invoice: Invoice) -> FormViewModel
 }
 
 class InvoiceListViewModel: InvoiceListViewModelProtocol {
     @Published var groupOption: InvoiceGroupingOption = .month
     @Published var displayData: [InvoiceSectionData] = []
+    @Published var winningInvoices: [WinningInvoice]? = nil
     @Published private var invoices: [Invoice] = []
 
     var period: InvoicePeriod
+    var dayToDraw: Int
+
+    var totalInvoiceCount: Int { invoices.count }
 
     typealias FormViewModel = InvoiceFormPageViewModel
 
     private var provider: InvoiceProvider
+    private var prizeProvider: PrizeDrawRecordProvider
     private var cancellables = Set<AnyCancellable>()
     private var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -36,9 +45,43 @@ class InvoiceListViewModel: InvoiceListViewModelProtocol {
         return formatter
     }()
 
-    init(period: InvoicePeriod, groupBy groupOption: Published<InvoiceGroupingOption>.Publisher, provider: InvoiceProvider) {
+    init(period: InvoicePeriod, groupBy groupOption: Published<InvoiceGroupingOption>.Publisher,
+         provider: InvoiceProvider, prizeProvider: PrizeDrawRecordProvider,
+         prizeChecker: PrizeChecker = .init(), periodProvider: InvoicePeriodProvider = .init()) {
         self.period = period
         self.provider = provider
+        self.prizeProvider = prizeProvider
+
+        let calendar = Calendar.current
+        let currentPeriod = periodProvider.current()
+        let nextPeriod = periodProvider.next(from: currentPeriod)
+        let today = calendar.startOfDay(for: Date())
+        var components = DateComponents()
+        components.year = nextPeriod.year
+        components.month = nextPeriod.firstMonth
+        components.day = 25
+        if period == currentPeriod,
+           let drawDate = calendar.date(from: components),
+           let howManyDays = calendar.dateComponents([.day], from: today, to: drawDate).day {
+            self.dayToDraw = howManyDays
+        } else {
+            self.dayToDraw = 0
+
+            let prizePublihser = prizeProvider.recordPublisher
+                .receive(on: DispatchQueue.main)
+                .compactMap {[weak self] records in
+                    return records.filter { $0.period == self?.period }.first
+                }
+                .removeDuplicates()
+
+            prizePublihser
+                .combineLatest($invoices)
+                .map { record, invoices in
+                    let result = prizeChecker.findWinningInvoices(invoices: invoices, prizeRecord: record)
+                    return result.sorted(by: { $0.prizeType < $1.prizeType })
+                }
+                .assign(to: &$winningInvoices)
+        }
 
         groupOption.assign(to: &$groupOption)
 
@@ -82,6 +125,11 @@ class InvoiceListViewModel: InvoiceListViewModelProtocol {
             return InvoiceSectionData(title: key, totalAmount: totalAmount, invoices: invoices)
         }
         .sorted { $0.title > $1.title }
+    }
+
+    func drawPrizeNumber(special: String, grand: String, firsts: [String]) {
+        let record = PrizeDrawRecord(period: self.period, specialNumber: special, grandNumber: grand, firstNumbers: firsts)
+        self.prizeProvider.insertRecord(record)
     }
 
     func makeEditInvoiceFormPageViewModel(invoice: Invoice) -> FormViewModel {

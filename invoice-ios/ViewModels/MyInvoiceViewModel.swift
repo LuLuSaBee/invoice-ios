@@ -32,11 +32,13 @@ class MyInvoiceViewModel: MyInvoiceViewModelProtocol {
 
     private let provider: InvoiceProvider
     private let periodProvider: InvoicePeriodProvider
+    private let prizeProvider: PrizeDrawRecordProvider
     private var cancellables = Set<AnyCancellable>()
 
-    init(provider: InvoiceProvider, periodProvider: InvoicePeriodProvider = .init()) {
+    init(provider: InvoiceProvider, prizeProvider: PrizeDrawRecordProvider, periodProvider: InvoicePeriodProvider = .init()) {
         self.provider = provider
         self.periodProvider = periodProvider
+        self.prizeProvider = prizeProvider
         self.expandDisplayLists(from: periodProvider.current())
         self.currentList = displayListViewModels.first!.id
     }
@@ -46,9 +48,9 @@ class MyInvoiceViewModel: MyInvoiceViewModelProtocol {
         let earlier = periodProvider.previous(from: previous)
 
         self.displayListViewModels.append(contentsOf: [
-            .init(period: start, groupBy: $groupingOption, provider: provider),
-            .init(period: previous, groupBy: $groupingOption, provider: provider),
-            .init(period: earlier, groupBy: $groupingOption, provider: provider),
+            .init(period: start, groupBy: $groupingOption, provider: provider, prizeProvider: prizeProvider),
+            .init(period: previous, groupBy: $groupingOption, provider: provider, prizeProvider: prizeProvider),
+            .init(period: earlier, groupBy: $groupingOption, provider: provider, prizeProvider: prizeProvider),
         ])
     }
 
