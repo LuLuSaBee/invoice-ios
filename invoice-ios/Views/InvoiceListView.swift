@@ -26,7 +26,7 @@ struct InvoiceListView<ViewModel: InvoiceListViewModelProtocol>: View {
     }
 
     @ViewBuilder func timeToDraw(left day: Int) -> some View {
-        VStack {
+        VStack(alignment: .leading) {
             HStack {
                 Image(systemName: "calendar.badge.clock")
                     .resizable()
