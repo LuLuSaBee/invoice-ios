@@ -31,6 +31,7 @@ struct MyInvoiceView<ViewModel: MyInvoiceViewModelProtocol>: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(isPresented: $showAddForm) {
             InvoiceFormPageView(viewModel: viewModel.makeAddInvoiceFormPageViewModel())
+                .id(showAddForm)
         }
         .toolbarVisibility(.visible, for: .navigationBar)
         .toolbar {
