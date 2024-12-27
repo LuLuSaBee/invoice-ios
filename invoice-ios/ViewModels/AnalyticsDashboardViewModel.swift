@@ -32,6 +32,7 @@ class AnalyticsDashboardViewModel: AnalyticsDashboardViewModelProtocol {
         $duration
             .removeDuplicates()
             .combineLatest(invoiceProvider.invoicesPublisher)
+            .receive(on: DispatchQueue.main)
             .map { [weak self] duration, invoices in
                 guard let self = self else { return [] }
                 return self.calculateChartData(duration: duration, invoices: invoices)
