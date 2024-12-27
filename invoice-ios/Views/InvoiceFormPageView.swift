@@ -85,7 +85,7 @@ struct InvoiceFormPageView<ViewModel: InvoiceFormPageViewModelProtocol>: View {
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 self.handleSave {
-                                    // TODO: Reset form data
+                                    viewModel.reset()
                                 }
                             }
                             .padding(.horizontal, 16)

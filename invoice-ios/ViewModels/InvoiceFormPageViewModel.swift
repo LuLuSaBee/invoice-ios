@@ -26,6 +26,7 @@ protocol InvoiceFormPageViewModelProtocol: ObservableObject {
     func deleteDetail(at detail: InvoiceDetail) -> Void
     func delete() async -> Void
     func save() async -> Bool
+    func reset() -> Void
 }
 
 class InvoiceFormPageViewModel: InvoiceFormPageViewModelProtocol {
@@ -185,7 +186,6 @@ class InvoiceFormPageViewModel: InvoiceFormPageViewModelProtocol {
     }
 
     func reset() {
-        self.details = []
         self.invoice = .init(
             shopName: "",
             numberPrefix: "",
@@ -195,6 +195,12 @@ class InvoiceFormPageViewModel: InvoiceFormPageViewModelProtocol {
             month: Calendar.current.component(.month, from: Date()),
             day: Calendar.current.component(.day, from: Date())
         )
+
+        self.details = []
+        self.shopNameField.value = ""
+        self.numberPrefixField.value = ""
+        self.numberSuffixField.value = ""
+        self.amountField.value = 0
     }
 }
 
