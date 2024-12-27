@@ -94,7 +94,6 @@ class InvoiceListViewModel: InvoiceListViewModelProtocol {
                 }
             }
             .map { $0.sorted { $0.date > $1.date } }
-            .removeDuplicates()
             .assign(to: &$invoices)
 
         groupOption.combineLatest($invoices)
