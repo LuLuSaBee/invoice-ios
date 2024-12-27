@@ -96,7 +96,7 @@ struct AnalyticsDashboardView<ViewModel: AnalyticsDashboardViewModelProtocol>: V
                         .foregroundStyle(.gray.opacity(0.5))
                 }
             }
-            .chartXAxis(.hidden)
+            .chartLegend(.hidden)
             .frame(height: 200)
             .chartXSelection(value: $barSelection)
             .onChange(of: barSelection) {
