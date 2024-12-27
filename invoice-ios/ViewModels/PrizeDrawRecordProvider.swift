@@ -24,6 +24,14 @@ class PrizeDrawRecordDataProvider: PrizeDrawRecordProvider {
 
     init(repository: PrizeDrawRecordRepository) {
         self.repository = repository
+
+        Task {
+            do {
+                self.records = try await repository.fetchAllRecords()
+            } catch {
+                print("Failed to fetch records: \(error)")
+            }
+        }
     }
 
     func insertRecord(_ record: PrizeDrawRecord) {
